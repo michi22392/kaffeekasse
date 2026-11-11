@@ -157,6 +157,21 @@
   dialog p strong { color: var(--text); }
   .dlg-actions { display: flex; gap: 10px; margin-top: 20px; }
   .dlg-actions .btn { flex: 1; }
+  .hello { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .hello .avatar { width: 48px; height: 48px; font-size: 1.05rem; }
+  .hello-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .hello-text strong { font-size: 1.3rem; line-height: 1.25; overflow-wrap: anywhere; }
+  .saldo { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .saldo.debt { color: var(--danger); }
+  .saldo.credit, .saldo.zero { color: var(--done); }
+  .again { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 12px; }
+  .again-lbl { display: inline-flex; align-items: center; gap: 5px; font-size: .9rem; font-weight: 700; color: var(--muted); }
+  .chip { min-height: 40px; padding: 0 14px; border: 2px solid var(--border); border-radius: 99px; background: var(--surface-2); color: var(--text); font-weight: 700; }
+  .chip[aria-pressed="true"] { border-color: var(--primary); background: var(--primary); color: var(--on-primary); }
+  .fav { display: inline-flex; align-items: center; gap: 3px; margin-top: 2px; font-size: .75rem; font-weight: 700; color: var(--accent); }
+  .choice[aria-checked="true"] .fav { color: inherit; }
+  .small-note { margin: 14px 0 0; font-size: .92rem; color: var(--muted); max-width: 360px; }
+  .small-note + .btn { margin-top: 18px; }
 </style>
 </head>
 <body>
@@ -178,7 +193,7 @@ import { firebaseConfig, useEmulator } from './firebase-config.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import { getAuth, connectAuthEmulator, onAuthStateChanged, signInAnonymously } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
 import {
-  getFirestore, connectFirestoreEmulator, collection, doc, getDocs, addDoc, deleteDoc, query, where, onSnapshot, serverTimestamp,
+  getFirestore, connectFirestoreEmulator, collection, doc, getDoc, getDocs, setDoc, addDoc, deleteDoc, query, where, onSnapshot, serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
 
 const firebaseApp = initializeApp(firebaseConfig);
@@ -189,14 +204,20 @@ if (useEmulator) {
   connectFirestoreEmulator(db, '127.0.0.1', 8080);
 }
 
-// Kollegen-App: anonyme Anmeldung, Zugriff nur mit Team-Code (Teil des Datenpfads).
-// Gelesen werden nur Namen, Sorten mit normalem Preis und Pausen – sonst nichts.
+// Bestellseite für Kollegen, anonyme Anmeldung. Zwei Zugänge:
+//  - persönlicher Link (…/bestellen.html?k=SCHLÜSSEL): nur die eigene Person, eigene Bestellungen,
+//    Lieblingsgetränk und – falls freigegeben – der eigene Saldo
+//  - allgemeine Seite mit Team-Code (…#code=…), solange sie in der Kaffeekasse aktiv ist
+// Gelesen werden nur Namen, Sorten mit normalem Preis und Pausen – keine privaten Daten.
 (function () {
   'use strict';
 
   const CODE_KEY = 'bestellen.teamCode';
   const PERSON_KEY = 'bestellen.person';
+  const LINK_KEY = 'bestellen.schluessel';
+  const SESSION_KEY = 'bestellen.sitzung';
   const RELOAD_AFTER = 5 * 60 * 1000; // Daten nach 5 Minuten im Hintergrund neu laden
+  const KEY_FORMAT = /^[A-Za-z0-9]{24,64}$/;
 
   const $ = sel => document.querySelector(sel);
   const app = $('#app');
@@ -221,13 +242,19 @@ if (useEmulator) {
     check: svg('<path d="M20 6 9 17l-5-5"/>', 20),
     checkSmall: svg('<path d="M20 6 9 17l-5-5"/>', 14),
     alert: svg('<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/>', 20),
+    star: svg('<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" fill="currentColor"/>', 12),
+    again: svg('<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>', 16),
   };
 
+  let mode = null;      // 'link' (persönlicher Link) oder 'team' (allgemeine Seite)
+  let key = null;       // persönlicher Schlüssel
   let code = null;      // Team-Code
-  let uid = null;       // anonyme Kennung dieses Geräts
+  let uid = null;       // anonyme Kennung dieses Geräts (bzw. dieser Home-Bildschirm-App)
   let team = null;      // { people, coffees, pauses }
+  let me = null;        // persönlicher Link: { personId, name, saldo, fav, zuletzt }
   let mine = [];        // eigene Bestellungen von heute
   let mineUnsub = null;
+  let linkUnsub = null;
   let loadedAt = 0;
   let day = dateKey(new Date());
   let sending = false;
@@ -260,14 +287,46 @@ if (useEmulator) {
     return new Promise(resolve => dlg.addEventListener('close', () => resolve(dlg.returnValue === 'ok'), { once: true }));
   }
 
-  function showMessage(text, retry = false) {
+  function stopListening() {
+    if (mineUnsub) { mineUnsub(); mineUnsub = null; }
+    if (linkUnsub) { linkUnsub(); linkUnsub = null; }
+  }
+
+  function showScreen({ text, note = '', retry = false, id = '' }) {
     app.innerHTML = `
-      <div class="center">
+      <div class="center"${id ? ` id="${id}"` : ''}>
         <div class="logo">${ICON.cupBig}</div>
         <h1>Kaffee bestellen</h1>
         <p class="lead">${esc(text)}</p>
+        ${note ? `<p class="small-note">${esc(note)}</p>` : ''}
         ${retry ? '<button class="btn primary" data-act="reload">Erneut versuchen</button>' : ''}
       </div>`;
+  }
+
+  const showMessage = (text, retry = false) => showScreen({ text, retry });
+
+  function showInvalid() {
+    stopListening();
+    team = null;
+    mode = null;
+    showScreen({
+      id: 'invalid',
+      text: 'Dieser Link ist nicht mehr gültig, bitte frag nach einem neuen.',
+      note: 'Liegt die Seite auf deinem Home-Bildschirm? Dann lösche das alte Symbol und lege den neuen Link noch einmal dort ab.',
+      retry: true,
+    });
+  }
+
+  // Allgemeine Seite in der Kaffeekasse abgeschaltet: nur noch Hinweis auf den persönlichen Link
+  function showLinkHint() {
+    stopListening();
+    team = null;
+    mode = null;
+    showScreen({
+      id: 'needLink',
+      text: 'Zum Bestellen brauchst du jetzt deinen persönlichen Link.',
+      note: 'Du bekommst ihn von der Kaffeekasse – einfach öffnen, dann geht es direkt los.',
+    });
   }
 
   // ---------- Start ----------
@@ -276,6 +335,39 @@ if (useEmulator) {
     if (!match) return null;
     history.replaceState(null, '', location.pathname + location.search); // Code nicht in der Adresszeile lassen
     return match[1].toUpperCase();
+  }
+
+  // Der Schlüssel bleibt in der Adresse (?k=…): Home-Bildschirm-Apps auf dem iPhone haben einen
+  // eigenen Speicher und kennen nur die Adresse, mit der sie abgelegt wurden.
+  function keepKeyInAddress(k) {
+    const params = new URLSearchParams(location.search);
+    params.set('k', k);
+    const wanted = `${location.pathname}?${params}`;
+    if (location.pathname + location.search + location.hash !== wanted) history.replaceState(null, '', wanted);
+  }
+
+  // Web-App-Manifest mit Start-Adresse inklusive Schlüssel (sonst würde der Startbildschirm ihn verlieren)
+  function setManifest() {
+    const start = new URL(location.pathname + location.search, location.origin).href;
+    const icon = document.querySelector('link[rel="apple-touch-icon"]');
+    const manifest = {
+      id: start,
+      name: 'Kaffee bestellen',
+      short_name: 'Kaffee',
+      start_url: start,
+      scope: new URL('./', location.href).href,
+      display: 'standalone',
+      background_color: '#f6efe7',
+      theme_color: '#6b4428',
+      icons: icon ? [{ src: icon.href, sizes: '180x180', type: 'image/png' }] : [],
+    };
+    let link = document.querySelector('link[rel="manifest"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'manifest';
+      document.head.appendChild(link);
+    }
+    link.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
   }
 
   function signedIn() {
@@ -290,26 +382,126 @@ if (useEmulator) {
 
   async function start() {
     showMessage('Wird geladen …');
+    const params = new URLSearchParams(location.search);
+    const urlKey = params.get('k');
     const linked = codeFromLink();
+    if (urlKey !== null) {
+      if (!KEY_FORMAT.test(urlKey)) { showInvalid(); return; } // z. B. beim Kopieren abgeschnitten
+      store.set(LINK_KEY, urlKey);
+    }
     if (linked) store.set(CODE_KEY, linked);
+    key = store.get(LINK_KEY);
+    if (key && !KEY_FORMAT.test(key)) key = null;
     code = store.get(CODE_KEY);
+    if (key) keepKeyInAddress(key);
+    setManifest();
     try {
       uid = await signedIn();
     } catch (e) {
       showMessage('Keine Verbindung. Bitte prüfe die Internetverbindung.', true);
       return;
     }
-    if (!code) showCodeForm();
-    else openTeam(code);
+    if (key) openLink(key); // der persönliche Link ersetzt den Team-Code
+    else if (code) openTeam(code);
+    else showStart();
+  }
+
+  async function loadMenu(base) {
+    const [coffees, pauses] = await Promise.all(['sorten', 'pausen'].map(name => getDocs(collection(db, ...base, name))));
+    loadedAt = Date.now();
+    return {
+      coffees: coffees.docs.map(d => ({ id: d.id, name: d.get('name'), price: d.get('preis'), pos: d.get('pos') })).sort((a, b) => a.pos - b.pos),
+      pauses: pauses.docs.map(d => ({ id: d.id, time: d.get('zeit'), name: d.get('name') || '' })).sort((a, b) => a.time.localeCompare(b.time)),
+    };
+  }
+
+  // ---------- Persönlicher Link ----------
+  // Dieses Gerät mit dem Schlüssel anmelden (die Regeln prüfen dabei, ob der Link gültig ist)
+  async function ensureSession(k, force = false) {
+    const mark = `${uid}|${k}`;
+    if (!force && store.get(SESSION_KEY) === mark) return;
+    await setDoc(doc(db, 'sitzungen', uid), { schluessel: k });
+    store.set(SESSION_KEY, mark);
+  }
+
+  async function loadLinkMenu(k) {
+    try {
+      await ensureSession(k);
+      return await loadMenu([]);
+    } catch (e) {
+      if (e.code !== 'permission-denied') throw e;
+      await ensureSession(k, true); // Anmeldung erneuern (z. B. nach einem Wechsel des Links)
+      return await loadMenu([]);
+    }
+  }
+
+  async function openLink(k, quiet = false) {
+    let snap, menu;
+    try {
+      snap = await getDoc(doc(db, 'links', k));
+      if (!snap.exists()) { showInvalid(); return; }
+      menu = await loadLinkMenu(k);
+    } catch (e) {
+      if (e.code === 'permission-denied') showInvalid();
+      else if (!quiet) showMessage('Die Daten konnten nicht geladen werden. Bitte prüfe die Internetverbindung.', true);
+      return;
+    }
+    mode = 'link';
+    key = k;
+    team = { ...menu, people: [] };
+    applyLink(snap.data());
+    if (!sel.coffeeId && me.fav) sel.coffeeId = me.fav; // Lieblingsgetränk vorauswählen
+    listenLink();
+    listenMine();
+    render();
+  }
+
+  function applyLink(data) {
+    me = {
+      personId: data.personId,
+      name: data.name || '',
+      saldo: Number.isInteger(data.saldo) ? data.saldo : null,
+      fav: team.coffees.some(c => c.id === data.fav) ? data.fav : null,
+      zuletzt: Array.isArray(data.zuletzt) ? data.zuletzt.filter(id => team.coffees.some(c => c.id === id)) : [],
+    };
+    team.people = [{ id: me.personId, name: me.name }];
+    sel.personId = me.personId;
+  }
+
+  // Name, Saldo und Lieblingsgetränk live; wird der Link ungültig, sofort Hinweis zeigen
+  function listenLink() {
+    if (linkUnsub) linkUnsub();
+    linkUnsub = onSnapshot(doc(db, 'links', key), snap => {
+      if (!snap.exists()) { showInvalid(); return; }
+      if (mode !== 'link') return;
+      applyLink(snap.data());
+      if (!sending && !dlg.open) render();
+    }, err => console.info('Link', err.code));
+  }
+
+  // ---------- Allgemeine Seite (Team-Code) ----------
+  async function teamPageOff() {
+    try {
+      const snap = await getDoc(doc(db, 'oeffentlich', 'status'));
+      return snap.exists() && snap.get('teamSeite') === false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  async function showStart() {
+    if (await teamPageOff()) showLinkHint();
+    else showCodeForm();
   }
 
   async function loadTeam(teamCode) {
-    const [people, coffees, pauses] = await Promise.all(['kollegen', 'sorten', 'pausen'].map(name => getDocs(collection(db, 'teams', teamCode, name))));
-    loadedAt = Date.now();
+    const [people, menu] = await Promise.all([
+      getDocs(collection(db, 'teams', teamCode, 'kollegen')),
+      loadMenu(['teams', teamCode]),
+    ]);
     return {
+      ...menu,
       people: people.docs.map(d => ({ id: d.id, name: d.get('name') })).sort((a, b) => a.name.localeCompare(b.name, 'de', { sensitivity: 'base' })),
-      coffees: coffees.docs.map(d => ({ id: d.id, name: d.get('name'), price: d.get('preis'), pos: d.get('pos') })).sort((a, b) => a.pos - b.pos),
-      pauses: pauses.docs.map(d => ({ id: d.id, time: d.get('zeit'), name: d.get('name') || '' })).sort((a, b) => a.time.localeCompare(b.time)),
     };
   }
 
@@ -317,14 +509,18 @@ if (useEmulator) {
     try {
       team = loaded || await loadTeam(teamCode);
     } catch (e) {
+      team = null;
       if (e.code === 'permission-denied') {
-        showCodeForm('Der Team-Code ist nicht (mehr) gültig. Bitte den aktuellen Code eingeben oder den neuen Link bzw. QR-Code öffnen.');
+        if (await teamPageOff()) showLinkHint();
+        else showCodeForm('Der Team-Code ist nicht (mehr) gültig. Bitte den aktuellen Code eingeben oder den neuen Link bzw. QR-Code öffnen.');
       } else if (!quiet) {
         showMessage('Die Daten konnten nicht geladen werden. Bitte prüfe die Internetverbindung.', true);
       }
       return;
     }
+    mode = 'team';
     code = teamCode;
+    me = null;
     store.set(CODE_KEY, teamCode);
     if (!sel.personId) {
       const saved = store.get(PERSON_KEY);
@@ -334,28 +530,38 @@ if (useEmulator) {
     render();
   }
 
-  // Eigene Bestellungen von heute – live, damit "fertig" sofort erscheint
+  // Eigene Bestellungen von heute – live, damit "fertig" sofort erscheint.
+  // Persönlicher Link: alle Bestellungen der Person (auch von anderen Geräten);
+  // allgemeine Seite: die von diesem Gerät.
   function listenMine() {
     if (mineUnsub) mineUnsub();
     day = dateKey(new Date());
-    const q = query(collection(db, 'teams', code, 'bestellungen'), where('uid', '==', uid), where('datum', '==', day));
+    const q = mode === 'link'
+      ? query(collection(db, 'bestellungen'), where('personId', '==', me.personId), where('datum', '==', day))
+      : query(collection(db, 'teams', code, 'bestellungen'), where('uid', '==', uid), where('datum', '==', day));
     mineUnsub = onSnapshot(q, snap => {
       mine = snap.docs.map(d => {
         const x = d.data({ serverTimestamps: 'estimate' });
-        return { id: d.id, personId: x.personId, coffeeId: x.sorteId, pauseId: x.pauseId, status: x.status, erstellt: x.erstellt ? x.erstellt.toMillis() : Date.now() };
+        return { id: d.id, personId: x.personId, coffeeId: x.sorteId, pauseId: x.pauseId, status: x.status, quelle: x.quelle, erstellt: x.erstellt ? x.erstellt.toMillis() : Date.now() };
       });
       const box = $('#mine');
       if (box) box.innerHTML = mineHtml();
     }, err => {
-      if (err.code === 'permission-denied') openTeam(code);
+      if (err.code === 'permission-denied') reopen();
       else console.error(err);
     });
   }
 
+  function reopen(quiet = false) {
+    if (mode === 'link') openLink(key, quiet);
+    else if (mode === 'team') openTeam(code, quiet);
+  }
+
   // ---------- Team-Code ----------
   function showCodeForm(message = '', value = '') {
-    if (mineUnsub) { mineUnsub(); mineUnsub = null; }
+    stopListening();
     team = null;
+    mode = null;
     app.innerHTML = `
       <div class="center">
         <div class="logo">${ICON.cupBig}</div>
@@ -366,6 +572,7 @@ if (useEmulator) {
           <button class="btn primary block big" type="submit" id="codeBtn">Weiter</button>
         </form>
         ${message ? `<p class="error" role="alert">${esc(message)}</p>` : ''}
+        <p class="small-note">Hast du einen persönlichen Link bekommen? Dann öffne einfach diesen – ganz ohne Code.</p>
       </div>`;
   }
 
@@ -382,7 +589,8 @@ if (useEmulator) {
     try {
       loaded = await loadTeam(value);
     } catch (e) {
-      showCodeForm(e.code === 'permission-denied' ? 'Dieser Code ist ungültig.' : 'Keine Verbindung. Bitte später erneut versuchen.', value);
+      if (e.code === 'permission-denied' && await teamPageOff()) showLinkHint();
+      else showCodeForm(e.code === 'permission-denied' ? 'Dieser Code ist ungültig.' : 'Keine Verbindung. Bitte später erneut versuchen.', value);
       return;
     }
     await openTeam(value, false, loaded);
@@ -404,15 +612,48 @@ if (useEmulator) {
   }
 
   function personHtml() {
-    const me = person();
-    if (me && !sel.changingPerson) {
-      return `<div class="me"><span class="avatar">${esc(initials(me.name))}</span><strong>${esc(me.name)}</strong><button class="btn small" data-act="change-person">Ändern</button></div>`;
+    const p = person();
+    if (p && !sel.changingPerson) {
+      return `<div class="me"><span class="avatar">${esc(initials(p.name))}</span><strong>${esc(p.name)}</strong><button class="btn small" data-act="change-person">Ändern</button></div>`;
     }
     if (!team.people.length) return '<p class="notice">Es sind noch keine Kollegen eingetragen.</p>';
     return `
       ${team.people.length > 12 ? '<input type="search" id="search" placeholder="Name suchen …" aria-label="Name suchen" autocomplete="off">' : ''}
       <div class="grid" role="radiogroup" aria-label="Wer bist du?">
         ${team.people.map(p => `<button type="button" class="choice" role="radio" aria-checked="${p.id === sel.personId}" data-pick="person" data-id="${p.id}" data-name="${esc(p.name.toLocaleLowerCase('de'))}">${esc(p.name)}</button>`).join('')}
+      </div>`;
+  }
+
+  // Begrüßung mit Namen und – falls freigegeben – dem eigenen Saldo
+  function helloHtml() {
+    let balance = '';
+    if (me.saldo !== null) {
+      balance = me.saldo > 0 ? `<span class="saldo debt">Offen: ${euro(me.saldo)}</span>`
+        : me.saldo < 0 ? `<span class="saldo credit">Guthaben: ${euro(-me.saldo)}</span>`
+        : `<span class="saldo zero">${ICON.checkSmall} Alles bezahlt</span>`;
+    }
+    return `
+      <section class="hello" id="hello">
+        <span class="avatar">${esc(initials(me.name || '?'))}</span>
+        <span class="hello-text"><strong>Hallo ${esc(me.name)}</strong>${balance}</span>
+      </section>`;
+  }
+
+  function coffeesHtml() {
+    const recent = mode === 'link' ? me.zuletzt : [];
+    const fav = mode === 'link' ? me.fav : null;
+    const chips = recent.length ? `
+      <div class="again" role="group" aria-label="Nochmal bestellen">
+        <span class="again-lbl">${ICON.again}Nochmal:</span>
+        ${recent.map(id => {
+          const c = team.coffees.find(x => x.id === id);
+          return `<button type="button" class="chip" aria-pressed="${id === sel.coffeeId}" data-pick="coffee" data-id="${id}">${esc(c.name)}</button>`;
+        }).join('')}
+      </div>` : '';
+    if (!team.coffees.length) return '<p class="notice">Es sind noch keine Getränke eingetragen.</p>';
+    return chips + `
+      <div class="grid" role="radiogroup" aria-label="Getränk">
+        ${team.coffees.map(c => `<button type="button" class="choice" role="radio" aria-checked="${c.id === sel.coffeeId}" data-pick="coffee" data-id="${c.id}"><span>${esc(c.name)}</span><span class="choice-sub">${euro(c.price)}</span>${c.id === fav ? `<span class="fav">${ICON.star}Lieblingsgetränk</span>` : ''}</button>`).join('')}
       </div>`;
   }
 
@@ -424,11 +665,13 @@ if (useEmulator) {
       const p = team.people.find(x => x.id === o.personId);
       const b = team.pauses.find(x => x.id === o.pauseId);
       const done = o.status === 'fertig';
+      const when = b ? `Pause ${clock(b.time)} Uhr` : o.pauseId ? 'Pause entfernt' : 'ohne Pause';
+      const who = mode === 'link' ? (o.quelle === 'admin' ? 'von der Kaffeekasse eingetragen' : '') : (p ? p.name : '');
       return `
         <li class="mine-row">
           <span class="mine-main">
             <strong>${esc(c ? c.name : 'Getränk')}</strong>
-            <span class="mine-sub">${esc(p ? p.name : '')} · ${b ? `Pause ${clock(b.time)} Uhr` : 'Pause entfernt'}</span>
+            <span class="mine-sub">${[who, when].filter(Boolean).map(esc).join(' · ')}</span>
           </span>
           <span class="status ${done ? 'fertig' : 'offen'}">${done ? ICON.checkSmall + 'fertig' : 'offen'}</span>
           ${done ? '' : `<button class="btn small ghost" data-act="cancel" data-id="${o.id}">Stornieren</button>`}
@@ -438,27 +681,29 @@ if (useEmulator) {
   }
 
   function render() {
-    if (!team) return;
+    if (!team || !mode) return;
     const ups = upcoming();
     if (!ups.some(b => b.id === sel.pauseId)) sel.pauseId = ups.length ? ups[0].id : null; // nächste Pause vorauswählen
     if (sel.personId && !person()) sel.personId = null;
     if (sel.coffeeId && !coffee()) sel.coffeeId = null;
     const button = orderButton();
+    const personal = mode === 'link';
+    const n = personal ? 0 : 1;
     app.innerHTML = `
       <header class="bar"><h1 class="brand"><span class="brand-icon">${ICON.cup}</span>Kaffee bestellen</h1></header>
+      ${personal ? helloHtml() : ''}
       ${success ? `<div class="success" role="status">${ICON.check}<span>${esc(success)}</span></div>` : ''}
+      ${personal ? '' : `
       <section class="card">
         <h2><span class="step">1</span>Wer bist du?</h2>
         ${personHtml()}
+      </section>`}
+      <section class="card">
+        <h2><span class="step">${n + 1}</span>Was möchtest du?</h2>
+        ${coffeesHtml()}
       </section>
       <section class="card">
-        <h2><span class="step">2</span>Was möchtest du?</h2>
-        <div class="grid" role="radiogroup" aria-label="Getränk">
-          ${team.coffees.map(c => `<button type="button" class="choice" role="radio" aria-checked="${c.id === sel.coffeeId}" data-pick="coffee" data-id="${c.id}"><span>${esc(c.name)}</span><span class="choice-sub">${euro(c.price)}</span></button>`).join('')}
-        </div>
-      </section>
-      <section class="card">
-        <h2><span class="step">3</span>Für welche Pause?</h2>
+        <h2><span class="step">${n + 2}</span>Für welche Pause?</h2>
         ${ups.length ? `
         <div class="grid" role="radiogroup" aria-label="Pause">
           ${ups.map(b => `<button type="button" class="choice" role="radio" aria-checked="${b.id === sel.pauseId}" data-pick="pause" data-id="${b.id}"><span>${clock(b.time)} Uhr</span><span class="choice-sub">${b.name ? esc(b.name) : '&nbsp;'}</span></button>`).join('')}
@@ -468,8 +713,10 @@ if (useEmulator) {
         <button class="btn primary block big" id="orderBtn" data-act="order" ${button.ready ? '' : 'disabled'}>${esc(button.label)}</button>
       </div>
       <section class="card" id="mine">${mineHtml()}</section>
-      <p class="foot"><button class="link" data-act="change-code">Team-Code ändern</button></p>`;
+      ${personal ? '' : '<p class="foot"><button class="link" data-act="change-code">Team-Code ändern</button></p>'}`;
   }
+
+  const ordersCollection = () => (mode === 'link' ? collection(db, 'bestellungen') : collection(db, 'teams', code, 'bestellungen'));
 
   async function placeOrder() {
     if (sending || !orderButton().ready) return;
@@ -481,7 +728,9 @@ if (useEmulator) {
     const duplicate = mine.some(o => o.status === 'offen' && o.personId === p.id && o.coffeeId === c.id && o.pauseId === b.id);
     if (duplicate && !(await confirmDialog({
       title: 'Noch einmal bestellen?',
-      html: `Für <strong>${esc(p.name)}</strong> ist schon ein ${esc(c.name)} für die Pause um ${clock(b.time)} Uhr bestellt.`,
+      html: mode === 'link'
+        ? `Du hast schon ein ${esc(c.name)} für die Pause um ${clock(b.time)} Uhr bestellt.`
+        : `Für <strong>${esc(p.name)}</strong> ist schon ein ${esc(c.name)} für die Pause um ${clock(b.time)} Uhr bestellt.`,
       confirmText: 'Ja, noch einen',
     }))) return;
     sending = true;
@@ -489,7 +738,7 @@ if (useEmulator) {
     btn.disabled = true;
     btn.textContent = 'Wird gesendet …';
     try {
-      await addDoc(collection(db, 'teams', code, 'bestellungen'), {
+      await addDoc(ordersCollection(), {
         personId: p.id, sorteId: c.id, pauseId: b.id, datum: dateKey(new Date()), uid,
         status: 'offen', quelle: 'kollege', erstellt: serverTimestamp(),
       });
@@ -504,7 +753,7 @@ if (useEmulator) {
       sending = false;
       if (e.code === 'permission-denied') {
         toast('Bestellen war nicht möglich – die Auswahl wird aktualisiert.', { error: true });
-        openTeam(code);
+        reopen();
       } else {
         render();
         toast('Bestellung fehlgeschlagen. Bitte erneut versuchen.', { error: true });
@@ -525,7 +774,8 @@ if (useEmulator) {
     });
     if (!ok) return;
     try {
-      await deleteDoc(doc(db, 'teams', code, 'bestellungen', id));
+      const ref = mode === 'link' ? doc(db, 'bestellungen', id) : doc(db, 'teams', code, 'bestellungen', id);
+      await deleteDoc(ref);
       success = '';
       toast('Bestellung storniert');
     } catch (e) {
@@ -578,20 +828,22 @@ if (useEmulator) {
     app.querySelectorAll('[data-pick=person]').forEach(b => { b.hidden = !b.dataset.name.includes(q); });
   });
 
-  // Neuer Link (…#code=…) in der bereits geöffneten App
+  // Neuer Team-Link (…#code=…) in der bereits geöffneten Seite; mit persönlichem Link ohne Bedeutung
   window.addEventListener('hashchange', () => {
     const linked = codeFromLink();
-    if (linked && uid) openTeam(linked);
+    if (!linked) return;
+    store.set(CODE_KEY, linked);
+    if (uid && mode !== 'link' && !key) openTeam(linked);
   });
 
-  // Beim Zurückkehren in die App: neuer Tag, geänderte Daten, vergangene Pausen
+  // Beim Zurückkehren: neuer Tag, geänderte Daten, vergangene Pausen
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden || !team || sending) return;
-    if (dateKey(new Date()) !== day || Date.now() - loadedAt > RELOAD_AFTER) openTeam(code, true);
+    if (document.hidden || !team || !mode || sending) return;
+    if (dateKey(new Date()) !== day || Date.now() - loadedAt > RELOAD_AFTER) reopen(true);
     else render();
   });
   setInterval(() => {
-    if (document.hidden || !team || sending || dlg.open) return;
+    if (document.hidden || !team || !mode || sending || dlg.open) return;
     const ids = upcoming().map(b => b.id).join();
     if (ids !== app.dataset.pauses) render();
     app.dataset.pauses = ids;
@@ -600,5 +852,6 @@ if (useEmulator) {
   start();
 })();
 </script>
+
 </body>
 </html>

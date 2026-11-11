@@ -484,6 +484,13 @@
   .qr-box { display: grid; justify-items: center; gap: 10px; margin-top: 4px; text-align: center; }
   .qr { width: min(260px, 68vw); height: auto; border-radius: 10px; }
   .qr-link { font-size: .8rem; color: var(--muted); word-break: break-all; }
+  .link-ic { display: grid; place-items: center; flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--surface-2); color: var(--credit); }
+  .link-box { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); font: .85rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; word-break: break-all; -webkit-user-select: all; user-select: all; }
+  .link-state { display: flex; align-items: center; gap: 6px; margin: 0; font-weight: 800; }
+  .link-state.on { color: var(--credit); }
+  .link-state.off { color: var(--debt); }
+  .link-card .switch { margin-top: 14px; }
+  .link-card .switch span:last-child { font-weight: 600; }
   .q-meta { font-size: .82rem; color: var(--muted); }
   .q-meta .pill { font-size: .72rem; padding: 0 7px; }
   #printArea { display: none; }
@@ -631,7 +638,10 @@ if (useEmulator) {
   // QR-Code-Bibliothek (MIT-Lizenz), wird nur bei Bedarf geladen; der Hash stellt sicher, dass es genau diese Datei ist
   const QR_LIB = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
   const QR_LIB_HASH = 'sha384-8FWZA6BGMXhsfO+BLtrJK0We6gg5o1JyO8xQm6peWDEUs17ACA5ziE/NIAkl9z2k';
-  const PUBLIC = ['kollegen', 'sorten', 'pausen'];
+  // Persönliche Links: 32 Zeichen aus A–Z, a–z, 0–9 (rund 190 Bit Zufall, nicht erratbar)
+  const LINK_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const LINK_LENGTH = 32;
+  const TEAM_PARTS = ['kollegen', 'sorten', 'pausen', 'bestellungen'];
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const app = $('#app');
@@ -676,6 +686,10 @@ if (useEmulator) {
     up: svg('<path d="m18 15-6-6-6 6"/>'),
     down: svg('<path d="m6 9 6 6 6-6"/>'),
     chevDown: svg('<path d="m6 9 6 6 6-6"/>', 20),
+    link: svg('<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>', 20),
+    linkSmall: svg('<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>', 15),
+    share: svg('<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/>', 20),
+    off: svg('<circle cx="12" cy="12" r="9"/><path d="m5.6 5.6 12.8 12.8"/>', 20),
     star: svg('<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" fill="currentColor"/>', 13),
   };
 
@@ -762,7 +776,7 @@ if (useEmulator) {
       orders: [],
       beans: [],
       pauses: [],
-      settings: { teamCode: null, sound: false },
+      settings: { teamCode: null, sound: false, teamPage: true },
     };
   }
 
@@ -770,7 +784,8 @@ if (useEmulator) {
   // Daten aus Version 1 erhalten dabei Standardwerte für die neuen Felder:
   // Rabatt 0 %, keine Notiz, Herstellungskosten "nicht hinterlegt" (null), keine Bohnen.
   // Ab Version 3 zusätzlich: Gruppen, Gruppe und Lieblingsgetränk je Person, offene Bestellungen.
-  // Ab Version 4 (Cloud): Pausen und Einstellungen (Team-Code, Hinweiston).
+  // Ab Version 4 (Cloud): Pausen und Einstellungen (Team-Code, Hinweiston), persönliche Links
+  // je Person ({ key, active }) samt Freigabe des Saldos, allgemeine Bestellseite an/aus.
   // keepOrphans: Buchungen behalten, deren Person (noch) nicht bekannt ist – beim Abgleich
   // zwischen Geräten können Buchung und neue Person kurz nacheinander eintreffen.
   function normalize(d, keepOrphans = false) {
@@ -798,6 +813,9 @@ if (useEmulator) {
         note: text(p.note, MAX_NOTE),
         favoriteCoffeeId: coffeeIds.has(p.favoriteCoffeeId) ? p.favoriteCoffeeId : null,
         groupId: groupIds.has(p.groupId) ? p.groupId : null, // null = "Ohne Gruppe"
+        link: p.link && typeof p.link.key === 'string' && /^[A-Za-z0-9]{24,64}$/.test(p.link.key)
+          ? { key: p.link.key, active: p.link.active !== false } : null,
+        showBalance: p.showBalance === true, // Saldo auf der persönlichen Bestellseite zeigen
       }));
     const personIds = new Set(people.map(p => p.id));
     const entries = d.entries
@@ -844,6 +862,7 @@ if (useEmulator) {
     const settings = {
       teamCode: typeof st.teamCode === 'string' && /^[A-Z0-9-]{4,40}$/.test(st.teamCode) ? st.teamCode : null,
       sound: st.sound === true,
+      teamPage: st.teamPage !== false, // allgemeine Bestellseite mit Team-Code
     };
     return { version: DATA_VERSION, people, groups, coffees, entries, orders, beans, pauses, settings };
   }
@@ -851,7 +870,8 @@ if (useEmulator) {
   // ---------- Cloud-Speicher (Firestore) ----------
   // privat/stamm         Kollegen, Gruppen, Sorten, Bohnen, Pausen, Einstellungen (ein Dokument, JSON-Text)
   // buchungen/{monat}    Buchungen und Zahlungen eines Kalendermonats (UTC), je bis zu 2000
-  // teams/{code}/bestellungen   die Warteschlange (offene Bestellungen)
+  // bestellungen/{id}    die Warteschlange (persönliche Links und deine eigenen Einträge)
+  // teams/{code}/bestellungen   Bestellungen über die allgemeine Seite (solange sie aktiv ist)
   // Beim Speichern wird nur geschrieben, was sich gegenüber dem letzten Stand geändert hat.
   let state = defaultState();
   let ready = false;          // Daten geladen, App sichtbar
@@ -861,8 +881,10 @@ if (useEmulator) {
   const stammRef = () => doc(db, 'privat', 'stamm');
   const bucketRef = id => doc(db, 'buchungen', id);
   const teamRef = code => doc(db, 'teams', code);
-  const orderCollection = () => collection(db, 'teams', state.settings.teamCode, 'bestellungen');
-  const orderRef = id => doc(db, 'teams', state.settings.teamCode, 'bestellungen', id);
+  const orderCollection = () => collection(db, 'bestellungen');
+  // Bestellungen der allgemeinen Seite liegen im Team-Bereich, alle anderen in "bestellungen"
+  const orderRef = o => (o.team ? doc(db, 'teams', o.team, 'bestellungen', o.id) : doc(db, 'bestellungen', o.id));
+  const teamPageOn = () => state.settings.teamPage && !!state.settings.teamCode;
 
   function stammOf(st) {
     return { version: DATA_VERSION, people: st.people, groups: st.groups, coffees: st.coffees, beans: st.beans, pauses: st.pauses, settings: st.settings };
@@ -937,6 +959,17 @@ if (useEmulator) {
     toast(err && err.code === 'permission-denied'
       ? 'Speichern abgelehnt: keine Berechtigung.'
       : 'Speichern fehlgeschlagen – bitte die Verbindung prüfen.', { error: true });
+  }
+
+  // Kryptografisch zufälliger Schlüssel; Bytes ab 248 werden verworfen, damit jedes Zeichen gleich wahrscheinlich ist
+  function newLinkKey() {
+    let key = '';
+    while (key.length < LINK_LENGTH) {
+      for (const b of crypto.getRandomValues(new Uint8Array(64))) {
+        if (b < 248 && key.length < LINK_LENGTH) key += LINK_CHARS[b % LINK_CHARS.length];
+      }
+    }
+    return key;
   }
 
   function newTeamCode() {
@@ -1235,6 +1268,7 @@ if (useEmulator) {
           <button class="person-row" data-action="open" data-id="${p.id}">
             <span class="avatar" style="--av:${avatarColor(p.name)}">${esc(initials(p.name))}</span>
             <span class="pinfo"><span class="pname">${esc(p.name)}</span>${sub ? `<span class="psub">${sub}</span>` : ''}</span>
+            ${p.link && p.link.active ? `<span class="link-ic" title="Persönlicher Link aktiv" role="img" aria-label="Persönlicher Link aktiv">${ICON.linkSmall}</span>` : ''}
             <span class="pbal ${s.cls}"><span class="amt">${euro(Math.abs(st.balance))}</span><span class="tag">${s.tag}</span></span>
             <span class="chev">${ICON.chev}</span>
           </button>
@@ -1413,6 +1447,49 @@ if (useEmulator) {
     }).join(' · ');
   }
 
+  const personLink = p => new URL(`bestellen.html?k=${p.link.key}`, location.href).href;
+
+  function linkCardHtml(p) {
+    const l = p.link;
+    let body;
+    if (!l) {
+      body = `
+        <p class="hint" style="margin-top:0">Mit einem persönlichen Link bestellt ${esc(p.name)} ohne Team-Code und ohne Namensauswahl und sieht nur die eigenen Bestellungen.</p>
+        <button class="btn primary block" data-action="link-create" data-id="${p.id}">${ICON.link}Link erzeugen</button>`;
+    } else if (l.active) {
+      body = `
+        <p class="link-state on">${ICON.checkSmall}Link aktiv</p>
+        <div class="link-box" id="linkText">${esc(personLink(p))}</div>
+        <div class="btn-col">
+          <button class="btn" data-action="link-share" data-id="${p.id}">${ICON.share}Link teilen</button>
+          <button class="btn" data-action="link-copy" data-id="${p.id}">${ICON.copy}Link kopieren</button>
+          <button class="btn" data-action="link-qr" data-id="${p.id}">${ICON.qr}QR-Code anzeigen</button>
+          <button class="btn" data-action="link-renew" data-id="${p.id}">${ICON.refresh}Neuen Link erzeugen</button>
+          <button class="btn" data-action="link-off" data-id="${p.id}">${ICON.off}Link deaktivieren</button>
+        </div>
+        <p class="hint">Der Link ist wie ein Schlüssel: Wer ihn hat, kann für ${esc(p.name)} bestellen. Wurde er weitergegeben, erzeuge einfach einen neuen – der alte funktioniert dann sofort nicht mehr.</p>`;
+    } else {
+      body = `
+        <p class="link-state off">${ICON.off}Link deaktiviert</p>
+        <p class="hint">Der Link funktioniert gerade nicht. Nach dem Aktivieren geht derselbe Link wieder.</p>
+        <div class="btn-col">
+          <button class="btn primary" data-action="link-on" data-id="${p.id}">${ICON.link}Link wieder aktivieren</button>
+          <button class="btn" data-action="link-renew" data-id="${p.id}">${ICON.refresh}Neuen Link erzeugen</button>
+        </div>`;
+    }
+    return `
+      <section class="card link-card" id="linkCard">
+        <h2>Persönlicher Bestell-Link</h2>
+        ${body}
+        <label class="switch">
+          <input type="checkbox" data-edit="person-balance" data-id="${p.id}" ${p.showBalance ? 'checked' : ''}>
+          <span class="switch-ui" aria-hidden="true"></span>
+          <span>Schuldenstand bzw. Guthaben auf der Bestellseite anzeigen</span>
+        </label>
+        <p class="hint">Angezeigt wird nur der aktuelle Betrag – keine einzelnen Buchungen, kein Rabatt, keine Kosten.</p>
+      </section>`;
+  }
+
   function viewPersonSettings(id) {
     const p = personById(id);
     return `
@@ -1454,6 +1531,8 @@ if (useEmulator) {
         </label>
         <button class="btn primary block" type="submit">Speichern</button>
       </form>
+
+      ${linkCardHtml(p)}
 
       <section class="card">
         <h2>Person löschen</h2>
@@ -1969,18 +2048,9 @@ if (useEmulator) {
         <p class="hint">In der Bestell-App können deine Kollegen nur Pausen wählen, die heute noch kommen.</p>
       </section>
 
-      <section class="card">
-        <h2>Team-Code &amp; Bestell-App</h2>
-        <p class="hint" style="margin-top:0">Mit dem Link oder QR-Code öffnen deine Kollegen die Bestell-App. Sie sehen dort nur Namen, Sorten mit normalem Preis und Pausen – ohne den Code gar nichts.</p>
-        <div class="team-code"><code id="teamCode">${esc(state.settings.teamCode || '')}</code></div>
-        <div class="btn-col">
-          <button class="btn" data-action="copy-link">${ICON.copy}Link kopieren</button>
-          <button class="btn" data-action="show-qr">${ICON.qr}QR-Code anzeigen</button>
-          <button class="btn" data-action="copy-code">${ICON.copy}Nur Code kopieren</button>
-          <button class="btn" data-action="change-code">${ICON.refresh}Code ändern</button>
-        </div>
-        <p class="hint">Nach einer Änderung funktioniert der alte Code sofort nicht mehr.</p>
-      </section>
+      ${linksSectionHtml()}
+
+      ${teamSectionHtml()}
 
       <section class="card">
         <h2>Konto</h2>
@@ -2000,6 +2070,47 @@ if (useEmulator) {
       </section>
 
       <p class="footer-note">${people.length} Kollegen · ${bookingsText(state.entries.length)} · ${plural(state.beans.length, 'Bohne', 'Bohnen')}</p>`;
+  }
+
+  function linksSectionHtml() {
+    const total = state.people.length;
+    const active = state.people.filter(p => p.link && p.link.active).length;
+    const missing = state.people.filter(p => !p.link).length;
+    const off = state.people.filter(p => p.link && !p.link.active).length;
+    return `
+      <section class="card" id="linksSection">
+        <h2>Persönliche Bestell-Links <span class="count">${active}/${total}</span></h2>
+        <p class="hint" style="margin-top:0">Jeder Kollege bekommt seinen eigenen Link zur Bestellseite: ohne Team-Code, ohne Namensauswahl, mit Lieblingsgetränk und auf Wunsch dem eigenen Schuldenstand.</p>
+        <p class="hint">${total ? `${plural(active, 'Person hat', 'Personen haben')} einen aktiven Link${off ? `, ${off} deaktiviert` : ''}${missing ? `, ${missing} noch keinen` : ''}.` : 'Noch keine Kollegen angelegt.'}</p>
+        ${missing ? `<div class="btn-col"><button class="btn primary" data-action="links-all">${ICON.link}Links für alle ohne Link erzeugen (${missing})</button></div>` : ''}
+        <p class="hint">Teilen, QR-Code, neu erzeugen oder deaktivieren: über das Zahnrad bei der jeweiligen Person.</p>
+      </section>`;
+  }
+
+  function teamSectionHtml() {
+    if (!teamPageOn()) {
+      return `
+      <section class="card">
+        <h2>Allgemeine Bestellseite (Team-Code)</h2>
+        <p class="link-state off">${ICON.off}Abgeschaltet</p>
+        <p class="hint">Wer die allgemeine Seite öffnet, sieht nur noch den Hinweis, dass er seinen persönlichen Link braucht. Der Team-Code ist gelöscht und funktioniert nicht mehr.</p>
+        <div class="btn-col"><button class="btn" data-action="team-on">${ICON.refresh}Wieder einschalten</button></div>
+      </section>`;
+    }
+    return `
+      <section class="card">
+        <h2>Allgemeine Bestellseite (Team-Code)</h2>
+        <p class="hint" style="margin-top:0">Die bisherige Seite für alle: Kollegen wählen dort ihren Namen selbst aus. Sie funktioniert weiter, bis du sie abschaltest – zum Beispiel, sobald alle ihren persönlichen Link haben.</p>
+        <div class="team-code"><code id="teamCode">${esc(state.settings.teamCode || '')}</code></div>
+        <div class="btn-col">
+          <button class="btn" data-action="copy-link">${ICON.copy}Link kopieren</button>
+          <button class="btn" data-action="show-qr">${ICON.qr}QR-Code anzeigen</button>
+          <button class="btn" data-action="copy-code">${ICON.copy}Nur Code kopieren</button>
+          <button class="btn" data-action="change-code">${ICON.refresh}Code ändern</button>
+          <button class="btn danger-outline" data-action="team-off">${ICON.off}Allgemeine Seite abschalten</button>
+        </div>
+        <p class="hint">Nach einer Änderung funktioniert der alte Code sofort nicht mehr.</p>
+      </section>`;
   }
 
   // ---------- Aktionen ----------
@@ -2156,6 +2267,7 @@ if (useEmulator) {
     }
     const openOrders = state.orders.filter(o => o.personId === id);
     if (openOrders.length) html += `<br><br>${plural(openOrders.length, 'offene Bestellung wird', 'offene Bestellungen werden')} storniert.`;
+    if (p.link && p.link.active) html += '<br><br>Der persönliche Bestell-Link funktioniert dann nicht mehr.';
     const ok = await confirmDialog({
       title: `${p.name} löschen?`,
       html,
@@ -2166,13 +2278,13 @@ if (useEmulator) {
     const removedOrders = state.orders.filter(o => o.personId === id);
     state.people = state.people.filter(x => x.id !== id);
     state.entries = state.entries.filter(e => e.personId !== id);
-    save(removedOrders.map(o => ['delete', orderRef(o.id)]));
+    save(removedOrders.map(o => ['delete', orderRef(o)]));
     refresh();
     toast(`${p.name} gelöscht`, {
       undo: () => {
         state.people.push(p);
         state.entries.push(...removed);
-        save(removedOrders.map(o => ['set', orderRef(o.id), restorable(o)]));
+        save(removedOrders.map(o => ['set', orderRef(o), restorable(o)]));
         refresh();
       },
     });
@@ -2229,13 +2341,13 @@ if (useEmulator) {
     const removedOrders = state.orders.filter(o => o.coffeeId === id);
     state.coffees.splice(idx, 1);
     fans.forEach(p => { p.favoriteCoffeeId = null; });
-    save(removedOrders.map(o => ['delete', orderRef(o.id)]));
+    save(removedOrders.map(o => ['delete', orderRef(o)]));
     refresh();
     toast(`${c.name} gelöscht`, {
       undo: () => {
         state.coffees.splice(Math.min(idx, state.coffees.length), 0, c);
         fans.forEach(p => { if (p.favoriteCoffeeId === null) p.favoriteCoffeeId = c.id; });
-        save(removedOrders.map(o => ['set', orderRef(o.id), restorable(o)]));
+        save(removedOrders.map(o => ['set', orderRef(o), restorable(o)]));
         refresh();
       },
     });
@@ -2263,6 +2375,14 @@ if (useEmulator) {
     const kind = t.dataset.edit;
     if (kind === 'pause-time' || kind === 'pause-name') {
       editPause(t);
+      return;
+    }
+    if (kind === 'person-balance') {
+      const p = personById(id);
+      if (!p) return;
+      p.showBalance = t.checked;
+      save();
+      toast(t.checked ? `${p.name} sieht jetzt den eigenen Schuldenstand` : `Schuldenstand für ${p.name} ausgeblendet`);
       return;
     }
     if (kind === 'person-name' || kind === 'coffee-name' || kind === 'group-name') {
@@ -2483,10 +2603,11 @@ if (useEmulator) {
   const compareOrders = (a, b) => orderKey(a) - orderKey(b) || a.erstellt - b.erstellt || (a.id < b.id ? -1 : 1);
   const vibrate = () => { if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) { /* ignorieren */ } } };
 
-  function orderFromDoc(snap) {
+  function orderFromDoc(snap, team = null) {
     const x = snap.data({ serverTimestamps: 'estimate' });
     return {
       id: snap.id,
+      team, // Team-Code, falls über die allgemeine Seite bestellt
       personId: x.personId,
       coffeeId: x.sorteId,
       pauseId: x.pauseId || null,
@@ -2505,13 +2626,20 @@ if (useEmulator) {
     ...(o.pos !== null ? { pos: o.pos } : {}),
   });
 
+  // Offene Bestellungen aus beiden Quellen: persönliche Links/eigene Einträge und allgemeine Seite
   function startOrders() {
     if (ordersUnsub) ordersUnsub();
     state.orders = [];
-    ordersUnsub = onSnapshot(query(orderCollection(), where('status', '==', 'offen')), snap => {
-      state.orders = snap.docs.map(orderFromDoc).sort(compareOrders);
+    const parts = { links: [], team: [] };
+    const stops = [];
+    const listen = (key, col, team) => stops.push(onSnapshot(query(col, where('status', '==', 'offen')), snap => {
+      parts[key] = snap.docs.map(d => orderFromDoc(d, team));
+      state.orders = [...parts.links, ...parts.team].sort(compareOrders);
       ordersChanged();
-    }, err => console.error('Bestellungen', err));
+    }, err => console.error('Bestellungen', err)));
+    listen('links', orderCollection(), null);
+    if (teamPageOn()) listen('team', collection(db, 'teams', state.settings.teamCode, 'bestellungen'), state.settings.teamCode);
+    ordersUnsub = () => stops.forEach(stop => stop());
   }
 
   function ordersChanged() {
@@ -2536,7 +2664,7 @@ if (useEmulator) {
   // Neue Reihenfolge speichern: nur Einträge, deren Position sich ändert
   function reposition(list) {
     const writes = [];
-    list.forEach((o, i) => { if (o.pos !== i) writes.push(['update', orderRef(o.id), { pos: i }]); });
+    list.forEach((o, i) => { if (o.pos !== i) writes.push(['update', orderRef(o), { pos: i }]); });
     commit(writes);
   }
 
@@ -2587,12 +2715,12 @@ if (useEmulator) {
     }
     const entry = bookingFor(p, c, Date.now());
     state.entries.push(entry);
-    save([['update', orderRef(id), { status: 'fertig', fertigAm: serverTimestamp() }]]);
+    save([['update', orderRef(order), { status: 'fertig', fertigAm: serverTimestamp() }]]);
     vibrate();
     toast(`${c.name} für ${p.name} verbucht`, {
       undo: () => {
         state.entries = state.entries.filter(e => e.id !== entry.id);
-        save([['update', orderRef(id), { status: 'offen', fertigAm: deleteField() }]]);
+        save([['update', orderRef(order), { status: 'offen', fertigAm: deleteField() }]]);
         refresh();
       },
     });
@@ -2603,9 +2731,9 @@ if (useEmulator) {
     if (!order) return;
     const p = personById(order.personId);
     const c = coffeeById(order.coffeeId);
-    commit([['delete', orderRef(id)]]);
+    commit([['delete', orderRef(order)]]);
     toast(`Storniert${p && c ? `: ${c.name} für ${p.name}` : ''}`, {
-      undo: () => commit([['set', orderRef(id), restorable(order)]]),
+      undo: () => commit([['set', orderRef(order), restorable(order)]]),
     });
   }
 
@@ -2625,12 +2753,12 @@ if (useEmulator) {
     const now = Date.now();
     const entries = done.map(o => bookingFor(personById(o.personId), coffeeById(o.coffeeId), now));
     state.entries.push(...entries);
-    save(done.map(o => ['update', orderRef(o.id), { status: 'fertig', fertigAm: serverTimestamp() }]));
+    save(done.map(o => ['update', orderRef(o), { status: 'fertig', fertigAm: serverTimestamp() }]));
     toast(`${plural(entries.length, 'Getränk', 'Getränke')} verbucht`, {
       undo: () => {
         const entryIds = new Set(entries.map(e => e.id));
         state.entries = state.entries.filter(e => !entryIds.has(e.id));
-        save(done.map(o => ['update', orderRef(o.id), { status: 'offen', fertigAm: deleteField() }]));
+        save(done.map(o => ['update', orderRef(o), { status: 'offen', fertigAm: deleteField() }]));
         refresh();
       },
     });
@@ -2768,8 +2896,18 @@ if (useEmulator) {
       danger: true,
     });
     if (!ok) return;
-    const replaced = state.orders.map(o => ['delete', orderRef(o.id)]);
+    const replaced = state.orders.map(o => ['delete', orderRef(o)]);
     data.settings.teamCode = state.settings.teamCode; // der Team-Code bleibt
+    data.settings.teamPage = state.settings.teamPage;
+    // Persönliche Links bleiben gültig, auch wenn das Backup älter ist als der Link
+    const current = new Map(state.people.map(p => [p.id, p]));
+    for (const p of data.people) {
+      const now = current.get(p.id);
+      if (!p.link && now && now.link) {
+        p.link = now.link;
+        p.showBalance = now.showBalance;
+      }
+    }
     state = { ...data, orders: state.orders };
     save(replaced.concat(importedOrderWrites(data.orders)));
     render();
@@ -2786,54 +2924,107 @@ if (useEmulator) {
       }]);
   }
 
-  // ---------- Öffentlicher Bereich für die Bestell-App ----------
-  // Unter teams/{code}/… liegen nur Namen, Sorten mit normalem Preis und Pausen. Die App gleicht
-  // den gewünschten Stand mit dem in Firestore ab und schreibt nur Unterschiede.
-  let published = null; // { kollegen: Map(id → Inhalt), … }
+  // ---------- Öffentlicher Bereich für die Bestellseiten ----------
+  // Veröffentlicht werden nur: Sorten mit normalem Preis, Pausen, je persönlichem Link Name,
+  // Lieblingsgetränk, zuletzt getrunkene Sorten und (falls freigegeben) der Saldo – sowie für die
+  // allgemeine Seite die Namen. Die App gleicht den gewünschten Stand mit dem in Firestore ab und
+  // schreibt nur Unterschiede.
+  let published = null; // { Pfad: Map(id → Inhalt) }
   let publicUnsubs = [];
   const canonical = o => JSON.stringify(Object.keys(o).sort().map(k => [k, o[k]]));
 
-  function publicData() {
-    return {
-      kollegen: new Map(state.people.map(p => [p.id, { name: p.name }])),
-      sorten: new Map(state.coffees.map((c, i) => [c.id, { name: c.name, preis: c.price, pos: i }])),
-      pausen: new Map(state.pauses.map(b => [b.id, { zeit: b.time, name: b.name }])),
-    };
+  // Inhalt der persönlichen Link-Dokumente (Schlüssel → Inhalt); nur aktive Links
+  function linkDocs() {
+    const docs = new Map();
+    const linked = state.people.filter(p => p.link && p.link.active);
+    if (!linked.length) return docs;
+    const ids = new Set(linked.map(p => p.id));
+    const coffeeIds = new Set(state.coffees.map(c => c.id));
+    const balance = new Map();
+    const lastDrink = new Map(); // Person → Map(Sorte → letzte Buchung)
+    for (const e of state.entries) {
+      if (!ids.has(e.personId)) continue;
+      balance.set(e.personId, (balance.get(e.personId) || 0) + (e.type === 'coffee' ? e.amount : -e.amount));
+      if (e.type !== 'coffee' || !coffeeIds.has(e.coffeeId)) continue;
+      if (!lastDrink.has(e.personId)) lastDrink.set(e.personId, new Map());
+      const drinks = lastDrink.get(e.personId);
+      if (!(drinks.get(e.coffeeId) >= e.ts)) drinks.set(e.coffeeId, e.ts);
+    }
+    for (const p of linked) {
+      const d = { personId: p.id, name: p.name };
+      if (p.showBalance) d.saldo = balance.get(p.id) || 0; // positiv = Schulden, negativ = Guthaben
+      if (coffeeIds.has(p.favoriteCoffeeId)) d.fav = p.favoriteCoffeeId;
+      const drinks = lastDrink.get(p.id);
+      if (drinks) d.zuletzt = [...drinks].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([id]) => id);
+      docs.set(p.link.key, d);
+    }
+    return docs;
   }
 
+  function publicData() {
+    const sorten = new Map(state.coffees.map((c, i) => [c.id, { name: c.name, preis: c.price, pos: i }]));
+    const pausen = new Map(state.pauses.map(b => [b.id, { zeit: b.time, name: b.name }]));
+    const data = {
+      sorten,
+      pausen,
+      links: linkDocs(),
+      oeffentlich: new Map([['status', { teamSeite: teamPageOn() }]]),
+    };
+    if (teamPageOn()) {
+      const base = `teams/${state.settings.teamCode}/`;
+      data[base + 'kollegen'] = new Map(state.people.map(p => [p.id, { name: p.name }]));
+      data[base + 'sorten'] = sorten;
+      data[base + 'pausen'] = pausen;
+    }
+    return data;
+  }
+
+  // Bei Änderung des Team-Codes oder Ab-/Einschalten der allgemeinen Seite neu starten
   function startPublic() {
     publicUnsubs.forEach(stop => stop());
-    const code = state.settings.teamCode;
-    published = { kollegen: null, sorten: null, pausen: null };
-    publicUnsubs = PUBLIC.map(name => onSnapshot(collection(db, 'teams', code, name), snap => {
-      published[name] = new Map(snap.docs.map(d => [d.id, canonical(d.data())]));
+    published = {};
+    publicUnsubs = Object.keys(publicData()).map(path => onSnapshot(collection(db, path), snap => {
+      published[path] = new Map(snap.docs.map(d => [d.id, canonical(d.data())]));
       syncPublic();
-    }, err => console.error('Öffentliche Daten', err)));
+    }, err => console.error('Öffentliche Daten', path, err)));
   }
 
   function syncPublic() {
-    if (!ready || !published || PUBLIC.some(name => !published[name])) return;
-    const code = state.settings.teamCode;
+    if (!ready || !published) return;
     const wanted = publicData();
+    const paths = Object.keys(wanted);
+    if (paths.some(path => !published[path])) return;
     const writes = [];
-    for (const name of PUBLIC) {
-      const have = published[name];
-      for (const [id, data] of wanted[name]) {
+    for (const path of paths) {
+      const have = published[path];
+      for (const [id, data] of wanted[path]) {
         const json = canonical(data);
         if (have.get(id) === json) continue;
         have.set(id, json);
-        writes.push(['set', doc(db, 'teams', code, name, id), data]);
+        writes.push(['set', doc(db, path, id), data]);
       }
       for (const id of [...have.keys()]) {
-        if (wanted[name].has(id)) continue;
+        if (wanted[path].has(id)) continue;
         have.delete(id);
-        writes.push(['delete', doc(db, 'teams', code, name, id)]);
+        writes.push(['delete', doc(db, path, id)]);
       }
     }
     commit(writes);
   }
 
+  // Team-Bereich vollständig löschen: danach funktioniert der Code nicht mehr
+  async function deleteTeamArea(code) {
+    const writes = [['delete', teamRef(code)]];
+    for (const name of TEAM_PARTS) {
+      try {
+        (await getDocs(collection(db, 'teams', code, name))).forEach(d => writes.push(['delete', d.ref]));
+      } catch (e) { console.error('Team-Bereich', e); }
+    }
+    commit(writes);
+  }
+
   function ensureTeamDoc() {
+    if (!teamPageOn()) return;
     const ref = teamRef(state.settings.teamCode);
     getDoc(ref).then(snap => {
       if (!snap.exists()) commit([['set', ref, { erstellt: serverTimestamp() }]]);
@@ -2845,7 +3036,7 @@ if (useEmulator) {
   // Neuer Code: neuer Bereich mit allen öffentlichen Daten und offenen Bestellungen, alter Bereich wird gelöscht
   async function changeTeamCode(newCode) {
     const oldCode = state.settings.teamCode;
-    const open = state.orders.slice();
+    const open = state.orders.filter(o => o.team);
     state.settings.teamCode = newCode;
     save([
       ['set', teamRef(newCode), { erstellt: serverTimestamp() }],
@@ -2853,13 +3044,106 @@ if (useEmulator) {
     ]);
     startOrders();
     startPublic();
-    const writes = [['delete', teamRef(oldCode)]];
-    for (const name of [...PUBLIC, 'bestellungen']) {
-      try {
-        (await getDocs(collection(db, 'teams', oldCode, name))).forEach(d => writes.push(['delete', d.ref]));
-      } catch (e) { console.error('Alter Team-Bereich', e); }
+    await deleteTeamArea(oldCode);
+  }
+
+  // Allgemeine Bestellseite ab- bzw. wieder einschalten
+  async function setTeamPage(on) {
+    if (on) {
+      state.settings.teamPage = true;
+      if (!state.settings.teamCode) state.settings.teamCode = newTeamCode();
+      save([['set', teamRef(state.settings.teamCode), { erstellt: serverTimestamp() }]]);
+      startOrders();
+      startPublic();
+      render();
+      toast(`Allgemeine Seite wieder aktiv (Code ${state.settings.teamCode})`);
+      return;
     }
-    commit(writes);
+    const open = state.orders.filter(o => o.team);
+    const ok = await confirmDialog({
+      title: 'Allgemeine Seite abschalten?',
+      html: 'Der Team-Code funktioniert danach nicht mehr. Wer die allgemeine Seite öffnet, sieht nur noch den Hinweis, dass er seinen persönlichen Link braucht.' +
+        (state.people.some(p => !p.link || !p.link.active) ? '<br><br><strong>Noch nicht alle Kollegen haben einen aktiven persönlichen Link.</strong>' : '') +
+        (open.length ? `<br><br>${plural(open.length, 'offene Bestellung bleibt', 'offene Bestellungen bleiben')} in der Warteschlange.` : ''),
+      confirmText: 'Abschalten',
+      danger: true,
+    });
+    if (!ok) return;
+    const code = state.settings.teamCode;
+    state.settings.teamPage = false;
+    // offene Bestellungen der allgemeinen Seite in die normale Warteschlange übernehmen
+    save(open.map(o => ['set', doc(db, 'bestellungen', o.id), restorable(o)]));
+    startOrders();
+    startPublic();
+    render();
+    toast('Allgemeine Bestellseite abgeschaltet');
+    await deleteTeamArea(code);
+  }
+
+  // ---------- Persönliche Links ----------
+  function updateLinkCard(p) {
+    const card = $('#linkCard');
+    if (card && currentView === 'personSettings' && currentId === p.id) card.outerHTML = linkCardHtml(p);
+    else render();
+  }
+
+  function createLink(p) {
+    p.link = { key: newLinkKey(), active: true };
+    save();
+    updateLinkCard(p);
+    toast(`Link für ${p.name} erzeugt`);
+  }
+
+  async function renewLink(p) {
+    const ok = await confirmDialog({
+      title: 'Neuen Link erzeugen?',
+      html: `Der bisherige Link von <strong>${esc(p.name)}</strong> funktioniert danach sofort nicht mehr – auch auf dem Home-Bildschirm. ${esc(p.name)} braucht dann den neuen Link.`,
+      confirmText: 'Neuen Link erzeugen',
+      danger: true,
+    });
+    if (!ok) return;
+    createLink(p);
+  }
+
+  async function setLinkActive(p, on) {
+    if (!on && !(await confirmDialog({
+      title: 'Link deaktivieren?',
+      html: `Der Link von <strong>${esc(p.name)}</strong> funktioniert dann nicht mehr. Du kannst ihn später wieder aktivieren – dann geht derselbe Link wieder.`,
+      confirmText: 'Deaktivieren',
+      danger: true,
+    }))) return;
+    p.link.active = on;
+    save();
+    updateLinkCard(p);
+    toast(on ? `Link von ${p.name} ist wieder aktiv` : `Link von ${p.name} deaktiviert`);
+  }
+
+  async function createAllLinks() {
+    const missing = state.people.filter(p => !p.link);
+    if (!missing.length) return;
+    const ok = await confirmDialog({
+      title: 'Links für alle erzeugen?',
+      html: `${plural(missing.length, 'Person bekommt', 'Personen bekommen')} einen persönlichen Link. Weitergeben kannst du ihn danach in den Einstellungen der jeweiligen Person (Zahnrad) – per Teilen, Kopieren oder QR-Code.`,
+      confirmText: 'Links erzeugen',
+    });
+    if (!ok) return;
+    missing.forEach(p => { p.link = { key: newLinkKey(), active: true }; });
+    save();
+    render();
+    toast(`${plural(missing.length, 'Link', 'Links')} erzeugt`);
+  }
+
+  async function shareLink(p) {
+    const url = personLink(p);
+    if (!navigator.share) {
+      copyText(url, 'Link kopiert – du kannst ihn jetzt z. B. in WhatsApp einfügen');
+      return;
+    }
+    try {
+      await navigator.share({ title: 'Kaffee bestellen', text: `Hallo ${p.name}, hier ist dein persönlicher Link zum Kaffee-Bestellen (bitte nicht weitergeben):`, url });
+    } catch (e) {
+      if (e.name !== 'AbortError') copyText(url, 'Teilen nicht möglich – Link wurde kopiert');
+    }
   }
 
   async function askNewTeamCode() {
@@ -2914,8 +3198,10 @@ if (useEmulator) {
     return `<svg class="qr" viewBox="0 0 ${total} ${total}" role="img" aria-label="QR-Code zur Bestell-App" shape-rendering="crispEdges"><rect width="${total}" height="${total}" fill="#fff"/><path d="${path}" fill="#000"/></svg>`;
   }
 
-  async function showQr() {
-    const link = orderAppLink();
+  async function showQr(link = orderAppLink(), opts = {}) {
+    const title = opts.title || 'QR-Code zur Bestell-App';
+    const caption = opts.caption || 'Mit der Handykamera scannen – die Bestell-App öffnet sich direkt mit eurem Team-Code.';
+    const heading = opts.heading || 'Kaffee bestellen';
     let code;
     try {
       await loadQrLib();
@@ -2925,13 +3211,13 @@ if (useEmulator) {
       return;
     }
     const print = await confirmDialog({
-      title: 'QR-Code zur Bestell-App',
-      html: `<span class="qr-box">${code}<span>Mit der Handykamera scannen – die Bestell-App öffnet sich direkt mit eurem Team-Code.</span><span class="qr-link">${esc(link)}</span></span>`,
+      title,
+      html: `<span class="qr-box">${code}<span>${esc(caption)}</span><span class="qr-link">${esc(link)}</span></span>`,
       confirmText: 'Drucken',
       cancelText: 'Schließen',
     });
     if (!print) return;
-    $('#printArea').innerHTML = `<h1>Kaffee bestellen</h1>${code}<p>QR-Code mit der Handykamera scannen</p><p class="print-link">${esc(link)}</p>`;
+    $('#printArea').innerHTML = `<h1>${esc(heading)}</h1>${code}<p>QR-Code mit der Handykamera scannen</p><p class="print-link">${esc(link)}</p>`;
     document.body.classList.add('print-qr');
     window.addEventListener('afterprint', () => document.body.classList.remove('print-qr'), { once: true });
     window.print();
@@ -3176,7 +3462,7 @@ if (useEmulator) {
     if (!start.settings.teamCode) start.settings.teamCode = newTeamCode();
     state = { ...start, orders: [] };
     ready = true;
-    save([['set', teamRef(state.settings.teamCode), { erstellt: serverTimestamp() }], ...importedOrderWrites(start.orders)]);
+    save([...(teamPageOn() ? [['set', teamRef(state.settings.teamCode), { erstellt: serverTimestamp() }]] : []), ...importedOrderWrites(start.orders)]);
     startOrders();
     startPublic();
     showApp();
@@ -3195,7 +3481,7 @@ if (useEmulator) {
     const extra = [];
     if (!state.settings.teamCode) {
       state.settings.teamCode = newTeamCode();
-      extra.push(['set', teamRef(state.settings.teamCode), { erstellt: serverTimestamp() }]);
+      if (teamPageOn()) extra.push(['set', teamRef(state.settings.teamCode), { erstellt: serverTimestamp() }]);
     }
     save(extra); // schreibt nur, falls die Prüfung beim Laden etwas angepasst hat
     startOrders();
@@ -3213,7 +3499,7 @@ if (useEmulator) {
     try { loaded = normalize({ ...JSON.parse(daten), entries: state.entries }, true); } catch (e) { loaded = null; }
     if (!loaded) return;
     synced.stamm = daten;
-    const codeChanged = loaded.settings.teamCode !== state.settings.teamCode;
+    const codeChanged = loaded.settings.teamCode !== state.settings.teamCode || loaded.settings.teamPage !== state.settings.teamPage;
     Object.assign(state, {
       people: loaded.people, groups: loaded.groups, coffees: loaded.coffees,
       beans: loaded.beans, pauses: loaded.pauses, settings: loaded.settings,
@@ -3341,6 +3627,27 @@ if (useEmulator) {
       case 'copy-code': copyText(state.settings.teamCode, 'Team-Code kopiert'); break;
       case 'show-qr': showQr(); break;
       case 'change-code': askNewTeamCode(); break;
+      case 'team-off': setTeamPage(false); break;
+      case 'team-on': setTeamPage(true); break;
+      case 'links-all': createAllLinks(); break;
+      case 'link-create': case 'link-renew': case 'link-copy': case 'link-share': case 'link-qr': case 'link-on': case 'link-off': {
+        const p = personById(id);
+        if (!p) break;
+        const act = el.dataset.action;
+        if (act === 'link-create') createLink(p);
+        else if (act === 'link-renew') renewLink(p);
+        else if (act === 'link-on' || act === 'link-off') setLinkActive(p, act === 'link-on');
+        else if (p.link && act === 'link-copy') copyText(personLink(p), `Link für ${p.name} kopiert`);
+        else if (p.link && act === 'link-share') shareLink(p);
+        else if (p.link) {
+          showQr(personLink(p), {
+            title: `Link für ${p.name}`,
+            caption: `${p.name} scannt den Code mit der Handykamera – die persönliche Bestellseite öffnet sich direkt.`,
+            heading: `Kaffee bestellen – ${p.name}`,
+          });
+        }
+        break;
+      }
       case 'logout': signOut(auth).then(() => location.reload()); break;
       case 'export': exportData(); break;
       case 'import': $('#importFile').click(); break;
