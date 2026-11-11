@@ -1,0 +1,154 @@
+rules_version = '2';
+
+// Kaffeekasse – Zugriffsregeln für Firestore
+// =============================================================================
+// Admin:    der Inhaber der Kaffeekasse, angemeldet mit Google (Benutzer-ID unten)
+// Kollegen: anonym angemeldet; der Team-Code ist Teil des Datenpfads. Wer den
+//           aktuellen Code nicht kennt, kann nichts lesen und nichts bestellen.
+//
+// Aufbau der Daten
+//   privat/stamm                      Kollegen mit Rabatt, Notiz, Gruppe, Lieblingsgetränk;
+//                                     Sorten mit Herstellungskosten; Bohnen; Gruppen;
+//                                     Einstellungen                              nur Admin
+//   buchungen/{monat}                 Buchungen und Zahlungen, je Monat ein Dokument
+//                                                                                nur Admin
+//   teams/{code}                      der aktuelle Team-Code (alte werden gelöscht)
+//                                                                                nur Admin
+//   teams/{code}/kollegen/{id}        nur der Name                               Kollegen lesen
+//   teams/{code}/sorten/{id}          Name und normaler Verkaufspreis            Kollegen lesen
+//   teams/{code}/pausen/{id}          Uhrzeit und Bezeichnung                    Kollegen lesen
+//   teams/{code}/bestellungen/{id}    Bestellungen                               Kollegen legen an,
+//                                     lesen nur eigene und stornieren nur eigene offene
+//
+// Alles, was hier nicht ausdrücklich erlaubt ist, ist verboten.
+// =============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Deine Benutzer-ID aus Firebase Authentication (Google-Login). Die Haupt-App
+    // zeigt sie nach der ersten Anmeldung an.
+    function isAdmin() {
+      return request.auth != null && request.auth.uid == 'HIER-DEINE-BENUTZER-ID';
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function teamDoc(code) {
+      return /databases/$(database)/documents/teams/$(code);
+    }
+
+    // Ein Team-Code gilt nur, solange sein Dokument existiert
+    function teamExists(code) {
+      return exists(teamDoc(code));
+    }
+
+    function teamEntryExists(code, collection, id) {
+      return id is string && exists(/databases/$(database)/documents/teams/$(code)/$(collection)/$(id));
+    }
+
+    // Schreibt genau diese Felder (nicht mehr, nicht weniger)
+    function hasExactly(fields) {
+      return request.resource.data.keys().hasOnly(fields) && request.resource.data.keys().hasAll(fields);
+    }
+
+    // Datum "JJJJ-MM-TT" höchstens zwei Tage von heute entfernt
+    function isPlausibleDate(value) {
+      let parts = value.split('-');
+      let day = timestamp.date(int(parts[0]), int(parts[1]), int(parts[2]));
+      return value.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && day > request.time - duration.value(3, 'd')
+        && day < request.time + duration.value(2, 'd');
+    }
+
+    // ---------------------------------------------------------------- privat
+    match /privat/{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    match /buchungen/{monat} {
+      allow read, write: if isAdmin();
+    }
+
+    // ------------------------------------------------------------ öffentlich
+    match /teams/{code} {
+      allow read, write: if isAdmin();
+
+      // Auch der Admin darf hier nur öffentliche Felder ablegen – so können
+      // Schulden, Rabatte, Notizen oder Kosten nie versehentlich sichtbar werden.
+      match /kollegen/{id} {
+        allow read: if isAdmin() || (isSignedIn() && teamExists(code));
+        allow create, update: if isAdmin()
+          && hasExactly(['name'])
+          && request.resource.data.name is string;
+        allow delete: if isAdmin();
+      }
+
+      match /sorten/{id} {
+        allow read: if isAdmin() || (isSignedIn() && teamExists(code));
+        allow create, update: if isAdmin()
+          && hasExactly(['name', 'preis', 'pos'])
+          && request.resource.data.name is string
+          && request.resource.data.preis is int
+          && request.resource.data.preis >= 0
+          && request.resource.data.pos is number;
+        allow delete: if isAdmin();
+      }
+
+      match /pausen/{id} {
+        allow read: if isAdmin() || (isSignedIn() && teamExists(code));
+        allow create, update: if isAdmin()
+          && hasExactly(['zeit', 'name'])
+          && request.resource.data.zeit is string
+          && request.resource.data.zeit.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$')
+          && request.resource.data.name is string;
+        allow delete: if isAdmin();
+      }
+
+      match /bestellungen/{id} {
+        // Kollegen sehen nur Bestellungen, die sie selbst angelegt haben
+        allow read: if isAdmin()
+          || (isSignedIn() && teamExists(code) && resource.data.uid == request.auth.uid);
+
+        allow create: if isAdmin() ? isValidAdminOrder() : isValidColleagueOrder(code);
+
+        // Status "fertig", Reihenfolge usw. setzt nur der Admin
+        allow update: if isAdmin() && isValidAdminOrder();
+
+        // Kollegen dürfen nur ihre eigenen, noch offenen Bestellungen stornieren
+        allow delete: if isAdmin()
+          || (isSignedIn() && teamExists(code)
+              && resource.data.uid == request.auth.uid
+              && resource.data.status == 'offen');
+      }
+    }
+
+    function isValidColleagueOrder(code) {
+      let order = request.resource.data;
+      return isSignedIn()
+        && teamExists(code)
+        && hasExactly(['personId', 'sorteId', 'pauseId', 'datum', 'uid', 'status', 'quelle', 'erstellt'])
+        && order.uid == request.auth.uid
+        && order.status == 'offen'
+        && order.quelle == 'kollege'
+        && order.erstellt == request.time
+        && order.datum is string
+        && isPlausibleDate(order.datum)
+        && teamEntryExists(code, 'kollegen', order.personId)
+        && teamEntryExists(code, 'sorten', order.sorteId)
+        && teamEntryExists(code, 'pausen', order.pauseId);
+    }
+
+    // Bestellungen kann der Kollege lesen – deshalb auch hier nur erlaubte Felder
+    // (keine Rabatte oder Kosten).
+    function isValidAdminOrder() {
+      let order = request.resource.data;
+      return order.keys().hasOnly(['personId', 'sorteId', 'pauseId', 'datum', 'uid', 'status', 'quelle', 'erstellt', 'pos', 'fertigAm'])
+        && order.keys().hasAll(['personId', 'sorteId', 'datum', 'uid', 'status', 'quelle', 'erstellt'])
+        && order.status in ['offen', 'fertig']
+        && order.quelle in ['kollege', 'admin'];
+    }
+  }
+}

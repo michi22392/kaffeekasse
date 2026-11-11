@@ -1,0 +1,3107 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kaffeekasse</title>
+<meta name="description" content="Kaffeekasse – wer schuldet wie viel für Kaffee?">
+<meta name="theme-color" content="#f6efe7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17110d" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kaffeekasse">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="application-name" content="Kaffeekasse">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f6efe7;
+    --surface: #fffaf4;
+    --surface-2: #f1e6d9;
+    --text: #2a1c13;
+    --muted: #7b6555;
+    --border: #e7d9c9;
+    --primary: #6b4428;
+    --primary-press: #55351e;
+    --on-primary: #fff8f0;
+    --accent: #c8894e;
+    --bar: #b07a4a;
+    --debt: #b0391f;
+    --debt-bg: #fbe5dd;
+    --credit: #2c7543;
+    --credit-bg: #e0f0e4;
+    --zero: #7b6555;
+    --zero-bg: #efe6dc;
+    --toast-bg: #2a1c13;
+    --toast-fg: #fff8f0;
+    --toast-action: #f2be86;
+    --shadow: 0 1px 2px rgba(70, 40, 20, .06), 0 6px 18px rgba(70, 40, 20, .06);
+    --radius: 16px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17110d;
+      --surface: #221912;
+      --surface-2: #2e2219;
+      --text: #f5ebe0;
+      --muted: #b9a390;
+      --border: #3a2b20;
+      --primary: #c8915a;
+      --primary-press: #b47f4b;
+      --on-primary: #1c120b;
+      --accent: #e3a96b;
+      --bar: #c8915a;
+      --debt: #ff8c72;
+      --debt-bg: #3d1e15;
+      --credit: #7fd497;
+      --credit-bg: #163020;
+      --zero: #b9a390;
+      --zero-bg: #2e2219;
+      --toast-bg: #f5ebe0;
+      --toast-fg: #1c120b;
+      --toast-action: #8a4f1f;
+      --shadow: none;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  main { max-width: 680px; margin: 0 auto; padding: 0 16px; }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; touch-action: manipulation; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  svg { flex: none; }
+  [hidden] { display: none !important; }
+
+  /* ---------- Kopfzeile ---------- */
+  .bar {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; align-items: center; gap: 8px;
+    min-height: 64px;
+    margin: 0 -16px 8px;
+    padding: env(safe-area-inset-top) 12px 0 16px;
+    background: var(--bg);
+  }
+  .brand { flex: 1; display: flex; align-items: center; gap: 10px; margin: 0; font-size: 1.4rem; font-weight: 800; letter-spacing: -.01em; }
+  .brand-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--primary); color: var(--on-primary); }
+  .page-title { flex: 1; margin: 0; font-size: 1.4rem; font-weight: 800; letter-spacing: -.01em; }
+  .bar-title { flex: 1; min-width: 0; margin: 0; font-size: 1.15rem; font-weight: 700; text-align: right; padding-right: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .spacer { flex: 1; }
+  .back {
+    display: inline-flex; align-items: center; gap: 2px; flex: none;
+    min-height: 44px; padding: 0 12px 0 4px; margin-left: -6px;
+    border: 0; border-radius: 12px; background: transparent;
+    color: var(--primary); font-weight: 700; font-size: 1.05rem;
+  }
+  .icon-btn {
+    display: inline-grid; place-items: center;
+    width: 44px; height: 44px; flex: none;
+    border: 0; border-radius: 12px; background: transparent; color: var(--muted);
+  }
+  @media (hover: hover) {
+    .icon-btn:hover, .back:hover { background: var(--surface-2); }
+    .icon-btn.del:hover { color: var(--debt); background: var(--debt-bg); }
+  }
+
+  /* ---------- Untere Navigationsleiste ---------- */
+  .tabbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    background: var(--surface); border-top: 1px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -4px 16px rgba(70, 40, 20, .05);
+  }
+  .tabbar-inner { display: flex; max-width: 680px; margin: 0 auto; }
+  .tab {
+    flex: 1; min-width: 0; min-height: 62px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    padding: 6px 0;
+    color: var(--muted); text-decoration: none; font-size: .68rem; font-weight: 700; letter-spacing: -.01em;
+  }
+  .tab > span:last-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  @media (max-width: 350px) { .tab { font-size: .6rem; letter-spacing: -.02em; } }
+  .tab-ico { position: relative; display: grid; place-items: center; width: 50px; height: 30px; border-radius: 99px; transition: background .15s; }
+  .tab-badge {
+    position: absolute; top: -5px; right: 0; min-width: 20px; height: 20px; padding: 0 5px;
+    display: grid; place-items: center; border-radius: 99px; border: 2px solid var(--surface);
+    background: var(--primary); color: var(--on-primary); font-size: .7rem; font-weight: 800; line-height: 1;
+  }
+  .tab[aria-current="page"] { color: var(--primary); }
+  .tab[aria-current="page"] .tab-ico { background: var(--surface-2); }
+
+  /* ---------- Allgemeine Bausteine ---------- */
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; margin: 0 0 16px; box-shadow: var(--shadow);
+  }
+  .card h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .card h3 { margin: 18px 0 8px; font-size: .95rem; font-weight: 700; }
+  .count { font-size: .8rem; font-weight: 700; color: var(--muted); background: var(--surface-2); border-radius: 99px; padding: 1px 9px; }
+  .pill { display: inline-block; font-size: .78rem; font-weight: 700; padding: 2px 9px; border-radius: 99px; background: var(--surface-2); color: var(--primary); }
+  .pill.credit { background: var(--credit-bg); color: var(--credit); }
+  .pill.debt { background: var(--debt-bg); color: var(--debt); }
+  .hint { margin: 10px 0 0; font-size: .9rem; color: var(--muted); }
+  .empty-note { margin: 4px 0; color: var(--muted); }
+  .empty-note a, .notice a { color: var(--primary); font-weight: 700; cursor: pointer; text-decoration: underline; }
+  .notice { margin: 0 0 16px; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); font-size: .92rem; }
+  .section-title { margin: 0 0 8px; font-size: .78rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 48px; padding: 0 18px;
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--surface); font-weight: 700;
+  }
+  .btn.primary { background: var(--primary); color: var(--on-primary); border-color: transparent; }
+  .btn.primary:active { background: var(--primary-press); }
+  .btn.danger { background: var(--debt); color: #fff; border-color: transparent; }
+  .btn.danger-outline { background: transparent; color: var(--debt); border-color: currentColor; }
+  @media (prefers-color-scheme: dark) { .btn.danger { color: #1c120b; } }
+  .btn.small { min-height: 40px; padding: 0 14px; font-size: .95rem; }
+  .btn.block { width: 100%; }
+  .btn:active { transform: scale(.98); }
+
+  input[type="text"], input[type="search"], textarea {
+    width: 100%; min-height: 48px; padding: 0 14px;
+    font-size: 17px;
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg); color: var(--text);
+    -webkit-appearance: none; appearance: none;
+  }
+  textarea { min-height: 96px; padding: 12px 14px; line-height: 1.4; resize: vertical; }
+  input::placeholder, textarea::placeholder { color: var(--muted); opacity: .8; }
+  input.invalid { border-color: var(--debt); box-shadow: 0 0 0 3px var(--debt-bg); }
+  .money { position: relative; display: block; }
+  .hint svg { vertical-align: -2px; }
+  .money input { padding-right: 34px; text-align: right; font-variant-numeric: tabular-nums; }
+  .money span { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+
+  .form { display: grid; gap: 16px; }
+  .field { display: grid; gap: 6px; min-width: 0; }
+  .field-lbl { font-weight: 700; font-size: .92rem; }
+  .field-hint { margin: 0; font-size: .85rem; color: var(--muted); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pct-field { max-width: 160px; }
+  .preview { margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--surface-2); font-size: .88rem; color: var(--muted); }
+  .preview strong { color: var(--text); }
+  .preview s { opacity: .75; }
+
+  .switch { position: relative; display: flex; align-items: center; gap: 12px; min-height: 48px; font-weight: 700; cursor: pointer; }
+  .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .switch-ui { position: relative; flex: none; width: 52px; height: 32px; border-radius: 99px; background: var(--border); transition: background .15s; }
+  .switch-ui::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .15s;
+  }
+  .switch input:checked + .switch-ui { background: var(--primary); }
+  .switch input:checked + .switch-ui::after { transform: translateX(20px); }
+  .switch input:focus-visible + .switch-ui { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .debt { color: var(--debt); }
+  .credit { color: var(--credit); }
+  .zero { color: var(--zero); }
+
+  /* ---------- Übersicht ---------- */
+  .summary { display: flex; gap: 10px; margin: 0 0 14px; }
+  .summary > div { flex: 1; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .sum-lbl { display: block; font-size: .8rem; font-weight: 600; color: var(--muted); }
+  .sum-amt { display: block; font-size: 1.4rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  #search { margin-bottom: 12px; background: var(--surface); }
+
+  .people { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .person-row {
+    width: 100%; min-height: 72px;
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 10px 12px 14px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); text-align: left;
+  }
+  .person-row:active { transform: scale(.99); background: var(--surface-2); }
+  @media (hover: hover) { .person-row:hover { border-color: var(--accent); } }
+  .avatar {
+    display: grid; place-items: center; flex: none;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--av); color: #fff; font-weight: 700; font-size: .95rem;
+  }
+  .pname { flex: 1; min-width: 0; font-size: 1.1rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pbal { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+  .pbal .amt { font-size: 1.1rem; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tag { font-size: .72rem; font-weight: 700; padding: 1px 8px; border-radius: 99px; }
+  .debt .tag { background: var(--debt-bg); }
+  .credit .tag { background: var(--credit-bg); }
+  .zero .tag { background: var(--zero-bg); }
+  .chev { color: var(--muted); display: grid; }
+
+  .empty { text-align: center; padding: 48px 16px; color: var(--muted); }
+  .empty-icon { display: inline-grid; place-items: center; width: 80px; height: 80px; border-radius: 24px; background: var(--surface-2); color: var(--primary); margin-bottom: 12px; }
+  .empty p { margin: 0 0 18px; font-size: 1.05rem; }
+
+  /* ---------- Detailansicht ---------- */
+  .hero {
+    text-align: center; padding: 22px 16px 20px; margin: 0 0 16px;
+    border-radius: 20px; border: 1px solid var(--border); background: var(--surface);
+  }
+  .hero.debt { background: var(--debt-bg); border-color: transparent; }
+  .hero.credit { background: var(--credit-bg); border-color: transparent; }
+  .hero.zero { background: var(--zero-bg); border-color: transparent; }
+  .hero-name { color: var(--text); font-size: 1.6rem; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
+  .hero-note { margin-top: 4px; color: var(--muted); font-size: .95rem; white-space: pre-line; overflow-wrap: anywhere; }
+  .hero-amt { margin-top: 6px; font-size: clamp(2.6rem, 13vw, 3.6rem); font-weight: 800; line-height: 1.05; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .hero-lbl { margin-top: 4px; font-weight: 700; }
+  .hero.bump .hero-amt { animation: bump .35s ease; }
+  @keyframes bump { 40% { transform: scale(1.08); } }
+
+  .coffee-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  @media (min-width: 540px) { .coffee-grid { grid-template-columns: repeat(3, 1fr); } }
+  .coffee-btn {
+    min-height: 86px; padding: 12px 8px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    border: 0; border-radius: 16px;
+    background: var(--primary); color: var(--on-primary);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, .15);
+    text-align: center; font-size: 1.05rem; font-weight: 700; line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  .coffee-btn .price { font-size: .95rem; font-weight: 500; opacity: .9; font-variant-numeric: tabular-nums; }
+  .coffee-btn:active { transform: scale(.96); background: var(--primary-press); }
+  .coffee-btn.done { animation: pop .3s ease; }
+  @keyframes pop { 0% { transform: scale(.93); } 60% { transform: scale(1.03); } 100% { transform: scale(1); } }
+  @media (hover: hover) { .coffee-btn:hover { filter: brightness(1.08); } }
+
+  .pay-row { display: flex; gap: 10px; }
+  .pay-row .money { flex: 1; min-width: 0; }
+  .chip {
+    margin-top: 10px; min-height: 40px; padding: 6px 14px;
+    border: 1px dashed var(--accent); border-radius: 99px;
+    background: transparent; color: var(--primary); font-size: .92rem; font-weight: 600;
+  }
+
+  .day { margin: 16px 0 2px; font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .day:first-child { margin-top: 0; }
+  .hist { list-style: none; margin: 0; padding: 0; }
+  .hrow { display: flex; align-items: center; gap: 12px; padding: 6px 0; border-top: 1px solid var(--border); }
+  .hist .hrow:first-child { border-top: 0; }
+  .hicon { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--surface-2); color: var(--primary); }
+  .hrow.payment .hicon { background: var(--credit-bg); color: var(--credit); }
+  .hmain { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .hlabel { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .htime { font-size: .85rem; color: var(--muted); }
+  .hamt { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .hrow.payment .hamt { color: var(--credit); }
+
+  /* ---------- Bohnen ---------- */
+  .bean-active {
+    margin: 0 0 18px; padding: 18px;
+    background: var(--surface); border: 2px solid var(--accent); border-radius: 20px; box-shadow: var(--shadow);
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 99px; background: var(--surface-2);
+    font-size: .76rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--primary);
+  }
+  .bean-active h2 { margin: 10px 0 0; font-size: 1.45rem; line-height: 1.2; overflow-wrap: anywhere; }
+  .bean-roaster { color: var(--muted); font-weight: 600; }
+  .grind {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    margin-top: 14px; padding: 12px 16px; border-radius: 14px;
+    background: var(--primary); color: var(--on-primary);
+  }
+  .grind-lbl { font-weight: 700; }
+  .grind-val { font-size: 2rem; font-weight: 800; line-height: 1.1; text-align: right; overflow-wrap: anywhere; }
+  .bean-notes { margin: 12px 0 0; white-space: pre-line; overflow-wrap: anywhere; }
+  .bean-meta { margin-top: 10px; font-size: .88rem; color: var(--muted); }
+  .bean-active .btn { margin-top: 14px; }
+  .bean-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .bean-item {
+    display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 4px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
+  }
+  .bean-main {
+    flex: 1; min-width: 0; min-height: 56px; padding: 8px 10px;
+    display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px;
+    border: 0; border-radius: 12px; background: transparent; text-align: left;
+  }
+  .bean-main strong { font-size: 1.05rem; overflow-wrap: anywhere; }
+  .bean-sub { font-size: .88rem; color: var(--muted); }
+
+  /* ---------- Auswertung ---------- */
+  .private { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 99px; background: var(--surface-2); color: var(--muted); font-size: .8rem; font-weight: 700; }
+  .seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; margin: 0 0 8px; border-radius: 14px; background: var(--surface-2); }
+  .seg button { min-height: 42px; border: 0; border-radius: 10px; background: transparent; color: var(--muted); font-size: .92rem; font-weight: 700; }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+  .period-label { margin: 0 0 14px; text-align: center; color: var(--muted); font-size: .9rem; }
+  .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 16px; }
+  .kpi { min-width: 0; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .kpi.wide { grid-column: 1 / -1; }
+  .kpi .lbl { display: block; font-size: .82rem; font-weight: 600; color: var(--muted); }
+  .kpi .val { display: block; margin-top: 2px; font-size: clamp(1.15rem, 5.6vw, 1.5rem); font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .kpi .sub { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-top: 4px; font-size: .8rem; color: var(--muted); }
+  .bd { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .bd-top { display: flex; justify-content: space-between; gap: 12px; font-size: .95rem; }
+  .bd-name { min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bd-val { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .bd-track { height: 8px; margin-top: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+  .bd-bar { display: block; height: 100%; border-radius: 99px; background: var(--bar); }
+
+  /* ---------- Einstellungen ---------- */
+  .add-form { display: flex; flex-wrap: wrap; gap: 8px; }
+  .add-form .grow { flex: 1 1 180px; min-width: 0; }
+  .add-form .btn { flex: 1 0 auto; }
+  .manage { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
+  .manage li { display: flex; align-items: center; gap: 4px; }
+  .manage .grow { flex: 1; min-width: 0; margin-right: 4px; }
+  .coffee-items { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .coffee-item { padding: 12px; border: 1px solid var(--border); border-radius: 14px; background: var(--bg); }
+  .coffee-item input { background: var(--surface); }
+  .ci-top { display: flex; align-items: center; gap: 8px; }
+  .ci-top input { flex: 1; min-width: 0; }
+  .ci-prices, .add-coffee { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ci-prices { margin-top: 8px; }
+  .add-coffee .full { grid-column: 1 / -1; }
+  .mini { display: grid; gap: 4px; min-width: 0; font-size: .8rem; font-weight: 600; color: var(--muted); }
+  .mini input { color: var(--text); font-weight: 400; }
+  .ci-margin { margin-top: 8px; font-size: .85rem; color: var(--muted); }
+  .btn-col { display: grid; gap: 10px; margin-top: 14px; }
+  @media (min-width: 540px) { .btn-col { grid-template-columns: 1fr 1fr; } }
+  .footer-note { text-align: center; font-size: .82rem; color: var(--muted); margin: 8px 0 0; }
+
+  /* ---------- Auswahlfelder ---------- */
+  .select { position: relative; display: block; min-width: 0; }
+  .select select {
+    width: 100%; min-height: 48px; padding: 0 40px 0 14px;
+    font: inherit; font-size: 17px; color: var(--text);
+    border: 1px solid var(--border); border-radius: 12px; background: var(--bg);
+    -webkit-appearance: none; appearance: none;
+  }
+  .select::after {
+    content: ""; position: absolute; right: 17px; top: 50%; width: 8px; height: 8px;
+    border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted);
+    transform: translateY(-70%) rotate(45deg); pointer-events: none;
+  }
+  .btn:disabled { opacity: .45; cursor: default; transform: none; }
+  .btn.ghost { background: transparent; border-color: transparent; color: var(--muted); }
+
+  /* ---------- Gruppen & Sortierung ---------- */
+  .ov-tools { display: grid; gap: 8px; margin: 0 0 14px; }
+  .sort-field { display: flex; align-items: center; gap: 10px; }
+  .sort-lbl { flex: none; font-size: .9rem; font-weight: 700; color: var(--muted); }
+  .sort-field .select { flex: 1; }
+  .sort-field select { min-height: 44px; font-size: 16px; background: var(--surface); }
+  .fold-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .fold-btns .btn { min-height: 40px; font-size: .9rem; }
+  .pinfo { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .pinfo .pname { flex: none; }
+  .psub { font-size: .82rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .psub svg { vertical-align: -1px; color: var(--accent); }
+  .grp { margin: 0 0 12px; }
+  .grp-head {
+    width: 100%; min-height: 54px; padding: 8px 14px 8px 10px;
+    display: flex; align-items: center; gap: 8px;
+    border: 0; border-radius: 14px; background: var(--surface-2); text-align: left;
+  }
+  .grp-chev { display: grid; color: var(--muted); transition: transform .15s; }
+  .grp.collapsed .grp-chev { transform: rotate(-90deg); }
+  .grp-name { flex: 1; min-width: 0; font-size: 1.05rem; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .grp-meta { display: flex; flex-direction: column; align-items: flex-end; font-size: .8rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+  .grp-body { padding-top: 10px; }
+  .grp.collapsed .grp-body { display: none; }
+  .searching .grp.collapsed .grp-body { display: block; }
+  .grp-empty { padding: 0 6px; font-size: .9rem; }
+  .pick-sec { margin: 0 0 16px; }
+  .pick-sec .section-title { margin-left: 4px; }
+  .person-row .pill { flex: none; }
+  .member-count { display: inline-flex; align-items: center; gap: 4px; flex: none; min-width: 40px; font-size: .85rem; font-weight: 700; color: var(--muted); }
+
+  /* ---------- Bestellungen ---------- */
+  .count.big { font-size: .85rem; padding: 4px 12px; }
+  .q-summary { padding: 14px 16px; }
+  .q-sum { margin: 0; font-size: 1.1rem; font-weight: 800; line-height: 1.35; }
+  .q-sub { margin: 2px 0 0; font-size: .88rem; color: var(--muted); }
+  .q-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0 14px; }
+  .queue { position: relative; list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .q-item {
+    padding: 6px 10px 10px 2px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
+  }
+  .q-item.dragging { position: relative; z-index: 10; border-color: var(--accent); box-shadow: 0 14px 32px rgba(40, 20, 8, .22); }
+  .q-item.moved { animation: moved .6s ease; }
+  @keyframes moved { 0% { background: var(--surface-2); } 100% { background: var(--surface); } }
+  .q-row { display: flex; align-items: center; gap: 4px; }
+  .q-handle {
+    display: grid; place-items: center; flex: none; width: 36px; height: 52px; border-radius: 10px;
+    color: var(--muted); cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none;
+  }
+  .dragging .q-handle { cursor: grabbing; color: var(--primary); }
+  .q-num { flex: none; min-width: 30px; font-size: 1.2rem; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; }
+  .q-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .q-name { font-size: 1.05rem; overflow-wrap: anywhere; }
+  .q-drink { font-weight: 600; }
+  .q-note { font-size: .85rem; color: var(--muted); white-space: pre-line; overflow-wrap: anywhere; }
+  .q-move { display: flex; flex: none; }
+  .q-move .icon-btn { width: 42px; color: var(--text); }
+  .q-move .icon-btn:disabled { opacity: .22; cursor: default; }
+  .q-acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 2px; }
+  .q-acts .btn.primary { min-width: 124px; }
+  body.drag-active { -webkit-user-select: none; user-select: none; }
+
+  .pick-person { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; padding: 0 4px; }
+  .pick-person .pname { font-size: 1.25rem; }
+  .pick-person .psub { white-space: normal; }
+  .choice-btn {
+    position: relative; min-height: 86px; padding: 10px 8px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    border: 2px solid var(--border); border-radius: 16px; background: var(--surface); color: var(--text);
+    text-align: center; font-size: 1.05rem; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere;
+  }
+  .choice-btn .price { font-size: .95rem; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .choice-btn .fav { display: inline-flex; align-items: center; gap: 3px; font-size: .72rem; font-weight: 800; color: var(--accent); }
+  .choice-btn[aria-checked="true"] { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+  .choice-btn[aria-checked="true"] .price, .choice-btn[aria-checked="true"] .fav { color: inherit; opacity: .92; }
+  .qty { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
+  .stepper { display: flex; align-items: center; gap: 6px; }
+  .stepper button { width: 48px; height: 48px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); font-size: 1.5rem; font-weight: 700; line-height: 1; }
+  .stepper output { min-width: 36px; text-align: center; font-size: 1.35rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .pick-actions { display: grid; gap: 10px; }
+
+  /* ---------- Anmeldung / Start ---------- */
+  body.gated #app, body.gated .tabbar, body.gated #warn { display: none; }
+  .gate { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
+  .gate-card { width: 100%; max-width: 440px; text-align: center; }
+  .gate-logo { display: inline-grid; place-items: center; width: 84px; height: 84px; margin-bottom: 16px; border-radius: 24px; background: var(--primary); color: var(--on-primary); }
+  .gate h1 { margin: 0 0 8px; font-size: 1.6rem; }
+  .gate-text { margin: 0 0 20px; color: var(--muted); }
+  .gate-text strong { color: var(--text); }
+  .gate-error { margin: 16px 0 0; color: var(--debt); font-weight: 600; }
+  .gate .btn.block ~ .btn.block { margin-top: 10px; }
+  .gate-steps { display: grid; gap: 8px; margin: 0 0 20px; padding-left: 22px; text-align: left; }
+  .uid-box { display: grid; justify-items: center; gap: 8px; margin: 0 0 18px; padding: 14px; border-radius: 14px; background: var(--surface-2); }
+  .uid-box code { font-size: .95rem; word-break: break-all; -webkit-user-select: all; user-select: all; }
+  .uid-lbl { font-size: .8rem; font-weight: 700; color: var(--muted); }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+  .warn {
+    max-width: 680px; margin: 8px auto 0; padding: 10px 14px;
+    border-radius: 12px; background: var(--debt-bg); color: var(--debt); font-weight: 600; font-size: .92rem;
+  }
+
+  /* ---------- Meldung (Toast) ---------- */
+  .toast {
+    position: fixed; z-index: 50; left: 50%;
+    bottom: calc(78px + env(safe-area-inset-bottom));
+    display: flex; align-items: center; gap: 10px;
+    width: max-content; max-width: calc(100vw - 32px);
+    padding: 10px 10px 10px 14px; min-height: 52px;
+    border-radius: 14px; background: var(--toast-bg); color: var(--toast-fg);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+    font-weight: 600;
+    opacity: 0; transform: translate(-50%, 16px); pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+  .toast.error { background: var(--debt); color: #fff; }
+  @media (prefers-color-scheme: dark) { .toast.error { color: #1c120b; } }
+  .toast-icon { display: grid; }
+  .toast-msg { padding-right: 4px; }
+  .toast-undo {
+    min-height: 40px; padding: 0 12px; margin-left: 4px;
+    border: 0; border-radius: 10px; background: transparent;
+    color: var(--toast-action); font-weight: 800;
+  }
+
+  /* ---------- Dialog ---------- */
+  dialog {
+    width: min(420px, calc(100vw - 32px)); padding: 0;
+    border: 0; border-radius: 20px;
+    background: var(--surface); color: var(--text);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+  }
+  dialog::backdrop { background: rgba(30, 18, 10, .5); }
+  dialog form { padding: 20px; }
+  dialog h2 { margin: 0 0 8px; font-size: 1.2rem; overflow-wrap: anywhere; }
+  dialog p { margin: 0; color: var(--muted); }
+  dialog p strong { color: var(--text); }
+  dialog p .debt, dialog p .credit { display: block; margin-bottom: 6px; }
+  .dlg-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .dlg-actions .btn { flex: 1; }
+</style>
+</head>
+<body>
+<div id="gate" class="gate" hidden></div>
+<div id="warn" class="warn" hidden role="status"></div>
+<main id="app"></main>
+
+<nav class="tabbar" id="tabbar" aria-label="Hauptnavigation"></nav>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<dialog id="dlg" aria-labelledby="dlgTitle">
+  <form method="dialog">
+    <h2 id="dlgTitle"></h2>
+    <p id="dlgMsg"></p>
+    <div class="dlg-actions">
+      <button class="btn" value="cancel">Abbrechen</button>
+      <button class="btn primary" value="ok" id="dlgOk">OK</button>
+    </div>
+  </form>
+</dialog>
+
+<script type="module">
+import { firebaseConfig, useEmulator } from './firebase-config.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
+import {
+  getAuth, connectAuthEmulator, onAuthStateChanged, GoogleAuthProvider,
+  signInWithPopup, signInWithRedirect, getRedirectResult, signOut,
+} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
+import {
+  initializeFirestore, connectFirestoreEmulator, persistentLocalCache, persistentMultipleTabManager,
+  doc, collection, query, where, onSnapshot, writeBatch, serverTimestamp, deleteField, Timestamp,
+} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+// Offline-Unterstützung: Daten werden auf dem Gerät zwischengespeichert, Änderungen ohne Netz nachgereicht
+const db = initializeFirestore(firebaseApp, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+if (useEmulator) {
+  connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+  connectFirestoreEmulator(db, '127.0.0.1', 8080);
+}
+
+(function () {
+  'use strict';
+
+  // Frühere Versionen speicherten alles im Browser unter diesem Schlüssel (nur noch zur Übernahme)
+  const LEGACY_KEY = 'kaffeekasse.v1';
+  const LAST_EXPORT_KEY = 'kaffeekasse.letztesBackup';
+  const PERIOD_KEY = 'kaffeekasse.zeitraum';
+  const SORT_KEY = 'kaffeekasse.sortierung';
+  const COLLAPSED_KEY = 'kaffeekasse.eingeklappt';
+  const DATA_VERSION = 4;
+  const NO_GROUP = '_ohne';
+  const NO_GROUP_NAME = 'Ohne Gruppe';
+  const DEFAULT_COFFEES = [['Kaffee', 50], ['Espresso', 60], ['Cappuccino', 80], ['Latte Macchiato', 100]];
+  const AVATAR_COLORS = ['#8b5a35', '#a0623a', '#6b4428', '#9a7148', '#7a5640', '#b06a45', '#5f7553', '#87683a'];
+  const MAX_NAME = 40;
+  const MAX_SHORT = 60;
+  const MAX_NOTE = 1000;
+  const LARGE_PAYMENT = 10000; // ab 100 € wird nachgefragt
+  const PERIODS = [['woche', 'Woche'], ['monat', 'Monat'], ['jahr', 'Jahr'], ['gesamt', 'Gesamt']];
+  const SORTS = [
+    ['schulden', 'Höchste Schulden zuerst'], ['guthaben', 'Höchstes Guthaben zuerst'],
+    ['haeufig', 'Am häufigsten bestellt'], ['zuletzt', 'Zuletzt bestellt'], ['name', 'Name (A–Z)'],
+  ];
+  const MAX_QTY = 10;
+  const BUCKET_SIZE = 2000; // Buchungen je Firestore-Dokument (bleibt deutlich unter 1 MB)
+  const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const app = $('#app');
+
+  // ---------- Icons ----------
+  const svg = (body, size = 22) =>
+    `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+  const CUP = '<path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 2v2M10 2v2M14 2v2"/>';
+  const BEAN = '<g transform="rotate(40 12 12)"><ellipse cx="12" cy="12" rx="6.5" ry="9.5"/><path d="M12 2.5c-2.6 3-2.6 6 0 9.5s2.6 6.5 0 9.5"/></g>';
+  const CLIP = '<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"/>';
+  const GEAR = '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>';
+  const ICON = {
+    cup: svg(CUP),
+    cupBig: svg(CUP, 40),
+    bean: svg(BEAN),
+    beanBig: svg(BEAN, 40),
+    coin: svg('<circle cx="12" cy="12" r="9"/><path d="M15.5 8.6a4.2 4.2 0 1 0 0 6.8"/><path d="M7.5 10.8h5.5M7.5 13.2h5.5"/>'),
+    gear: svg(GEAR, 24),
+    gearSmall: svg(GEAR, 20),
+    users: svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'),
+    chart: svg('<path d="M3 3v18h18"/><path d="M8 17v-5M13 17V7M18 17v-8"/>'),
+    lock: svg('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>', 16),
+    back: svg('<path d="m15 18-6-6 6-6"/>', 26),
+    chev: svg('<path d="m9 18 6-6-6-6"/>', 20),
+    trash: svg('<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6M14 11v6"/>', 20),
+    plus: svg('<path d="M12 5v14M5 12h14"/>', 20),
+    download: svg('<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>', 20),
+    upload: svg('<path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/>', 20),
+    check: svg('<path d="M20 6 9 17l-5-5"/>', 20),
+    checkSmall: svg('<path d="M20 6 9 17l-5-5"/>', 14),
+    alert: svg('<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/>', 20),
+    alertSmall: svg('<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/>', 14),
+    login: svg('<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/>', 20),
+    logout: svg('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>', 20),
+    copy: svg('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>', 18),
+    orders: svg(CLIP),
+    ordersBig: svg(CLIP, 40),
+    usersSmall: svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>', 16),
+    grip: svg('<g fill="currentColor" stroke="none"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></g>'),
+    up: svg('<path d="m18 15-6-6-6 6"/>'),
+    down: svg('<path d="m6 9 6 6 6-6"/>'),
+    chevDown: svg('<path d="m6 9 6 6 6-6"/>', 20),
+    star: svg('<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" fill="currentColor"/>', 13),
+  };
+
+  // ---------- Formatierung ----------
+  const euroFmt = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
+  const plainFmt = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: false });
+  const numFmt = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 });
+  const dateFmt = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const shortDateFmt = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit' });
+  const monthFmt = new Intl.DateTimeFormat('de-DE', { month: 'long', year: 'numeric' });
+  const weekdayFmt = new Intl.DateTimeFormat('de-DE', { weekday: 'long' });
+  const timeFmt = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit' });
+
+  const euro = cents => euroFmt.format(cents / 100);
+  const signedEuro = cents => (cents < 0 ? '−' : '') + euro(Math.abs(cents));
+  const plain = cents => plainFmt.format(cents / 100);
+  const grams = g => (g >= 1000 ? numFmt.format(g / 1000) + ' kg' : g + ' g');
+  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const cleanName = s => String(s).replace(/\s+/g, ' ').trim().slice(0, MAX_NAME);
+  const cleanText = (s, max) => String(s).trim().slice(0, max);
+  const sameName = (a, b) => a.toLocaleLowerCase('de') === b.toLocaleLowerCase('de');
+  const discountedPrice = (price, discount) => Math.round(price * (100 - discount) / 100);
+
+  // Akzeptiert "1,50", "1.50", "1,5", "2", "2 €", "1.000,50" – Ergebnis in Cent oder null
+  function parseAmount(input) {
+    let s = String(input).replace(/[\s €]/g, '').replace(/^\+/, '');
+    if (!s) return null;
+    if (s.includes(',') && s.includes('.')) {
+      s = s.lastIndexOf(',') > s.lastIndexOf('.')
+        ? s.replace(/\./g, '').replace(',', '.')
+        : s.replace(/,/g, '');
+    } else {
+      s = s.replace(',', '.');
+    }
+    if (!/^(\d+(\.\d{0,2})?|\.\d{1,2})$/.test(s)) return null;
+    const cents = Math.round(parseFloat(s) * 100);
+    return Number.isFinite(cents) ? cents : null;
+  }
+
+  // Rabatt in Prozent: leer = 0, ungültig = null
+  function parsePercent(input) {
+    const s = String(input).replace(/[\s %]/g, '').replace(',', '.');
+    if (!s) return 0;
+    if (!/^\d+(\.\d{0,2})?$/.test(s)) return null;
+    const v = parseFloat(s);
+    return v >= 0 && v <= 100 ? v : null;
+  }
+
+  // Packungsgröße in Gramm ("1000", "1.000 g", "1,5 kg"): leer = null, ungültig = NaN
+  function parseGrams(input) {
+    let s = String(input).toLowerCase().replace(/[\s ]/g, '');
+    if (!s) return null;
+    let factor = 1;
+    if (s.endsWith('kg')) { factor = 1000; s = s.slice(0, -2); }
+    else if (s.endsWith('g')) s = s.slice(0, -1);
+    if (factor === 1) s = s.replace(/\./g, '');
+    s = s.replace(',', '.');
+    if (!/^\d+(\.\d+)?$/.test(s)) return NaN;
+    const g = Math.round(parseFloat(s) * factor);
+    return g > 0 ? g : NaN;
+  }
+
+  function dayLabel(ts) {
+    const d = new Date(ts);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    const prefix = d.toDateString() === today.toDateString() ? 'Heute'
+      : d.toDateString() === yesterday.toDateString() ? 'Gestern'
+      : weekdayFmt.format(d);
+    return `${prefix}, ${dateFmt.format(d)}`;
+  }
+
+  // ---------- Daten & Speicher ----------
+  function defaultState() {
+    return {
+      version: DATA_VERSION,
+      people: [],
+      groups: [],
+      coffees: DEFAULT_COFFEES.map(([name, price]) => ({ id: uid(), name, price, cost: null })),
+      entries: [],
+      orders: [],
+      beans: [],
+      pauses: [],
+      settings: { teamCode: null, sound: false },
+    };
+  }
+
+  // Prüft geladene bzw. importierte Daten und bringt sie auf das aktuelle Format.
+  // Daten aus Version 1 erhalten dabei Standardwerte für die neuen Felder:
+  // Rabatt 0 %, keine Notiz, Herstellungskosten "nicht hinterlegt" (null), keine Bohnen.
+  // Ab Version 3 zusätzlich: Gruppen, Gruppe und Lieblingsgetränk je Person, offene Bestellungen.
+  // Ab Version 4 (Cloud): Pausen und Einstellungen (Team-Code, Hinweiston).
+  // keepOrphans: Buchungen behalten, deren Person (noch) nicht bekannt ist – beim Abgleich
+  // zwischen Geräten können Buchung und neue Person kurz nacheinander eintreffen.
+  function normalize(d, keepOrphans = false) {
+    if (!d || typeof d !== 'object' || !Array.isArray(d.people) || !Array.isArray(d.coffees) || !Array.isArray(d.entries)) return null;
+    const isId = v => typeof v === 'string' && v.length > 0 && v.length < 64;
+    const isCents = v => Number.isInteger(v) && v >= 0;
+    const optCents = v => (isCents(v) ? v : null);
+    const text = (v, max) => (typeof v === 'string' ? cleanText(v, max) : '');
+    const percent = v => (typeof v === 'number' && v >= 0 && v <= 100 ? Math.round(v * 100) / 100 : 0);
+
+    const groups = (Array.isArray(d.groups) ? d.groups : [])
+      .filter(g => g && isId(g.id) && typeof g.name === 'string' && cleanName(g.name))
+      .map(g => ({ id: g.id, name: cleanName(g.name) }));
+    const groupIds = new Set(groups.map(g => g.id));
+    const coffees = d.coffees
+      .filter(c => c && isId(c.id) && typeof c.name === 'string' && cleanName(c.name) && isCents(c.price))
+      .map(c => ({ id: c.id, name: cleanName(c.name), price: c.price, cost: optCents(c.cost) }));
+    const coffeeIds = new Set(coffees.map(c => c.id));
+    const people = d.people
+      .filter(p => p && isId(p.id) && typeof p.name === 'string' && cleanName(p.name))
+      .map(p => ({
+        id: p.id,
+        name: cleanName(p.name),
+        discount: percent(p.discount),
+        note: text(p.note, MAX_NOTE),
+        favoriteCoffeeId: coffeeIds.has(p.favoriteCoffeeId) ? p.favoriteCoffeeId : null,
+        groupId: groupIds.has(p.groupId) ? p.groupId : null, // null = "Ohne Gruppe"
+      }));
+    const personIds = new Set(people.map(p => p.id));
+    const entries = d.entries
+      .filter(e => e && isId(e.id) && (keepOrphans || personIds.has(e.personId)) && (e.type === 'coffee' || e.type === 'payment') && isCents(e.amount) && Number.isFinite(e.ts))
+      .map(e => e.type === 'coffee'
+        ? {
+            id: e.id,
+            personId: e.personId,
+            type: 'coffee',
+            coffeeId: typeof e.coffeeId === 'string' ? e.coffeeId : null,
+            label: (typeof e.label === 'string' && cleanName(e.label)) || 'Kaffee',
+            amount: e.amount,                                         // berechneter Preis nach Rabatt
+            listPrice: isCents(e.listPrice) ? e.listPrice : e.amount, // Verkaufspreis vor Rabatt
+            discount: percent(e.discount),
+            cost: optCents(e.cost),                                   // Herstellungskosten; null = unbekannt
+            ts: e.ts,
+          }
+        : { id: e.id, personId: e.personId, type: 'payment', amount: e.amount, ts: e.ts });
+    let activeSeen = false;
+    const beans = (Array.isArray(d.beans) ? d.beans : [])
+      .filter(b => b && isId(b.id) && typeof b.name === 'string' && cleanName(b.name))
+      .map(b => {
+        const active = b.active === true && !activeSeen;
+        if (active) activeSeen = true;
+        return {
+          id: b.id,
+          name: cleanName(b.name),
+          roaster: text(b.roaster, MAX_SHORT),
+          grind: text(b.grind, MAX_NAME),
+          notes: text(b.notes, MAX_NOTE),
+          packPrice: optCents(b.packPrice),
+          packSize: Number.isInteger(b.packSize) && b.packSize > 0 ? b.packSize : null,
+          active,
+        };
+      });
+    // Warteschlange: Reihenfolge im Array = Reihenfolge der Zubereitung
+    const orders = (Array.isArray(d.orders) ? d.orders : [])
+      .filter(o => o && isId(o.id) && personIds.has(o.personId) && coffeeIds.has(o.coffeeId))
+      .map(o => ({ id: o.id, personId: o.personId, coffeeId: o.coffeeId, createdAt: Number.isFinite(o.createdAt) ? o.createdAt : 0 }));
+    const pauses = (Array.isArray(d.pauses) ? d.pauses : [])
+      .filter(b => b && isId(b.id) && typeof b.time === 'string' && /^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(b.time))
+      .map(b => ({ id: b.id, time: b.time, name: text(b.name, MAX_NAME) }));
+    const st = d.settings && typeof d.settings === 'object' ? d.settings : {};
+    const settings = {
+      teamCode: typeof st.teamCode === 'string' && /^[A-Z0-9-]{4,40}$/.test(st.teamCode) ? st.teamCode : null,
+      sound: st.sound === true,
+    };
+    return { version: DATA_VERSION, people, groups, coffees, entries, orders, beans, pauses, settings };
+  }
+
+  // ---------- Cloud-Speicher (Firestore) ----------
+  // privat/stamm         Kollegen, Gruppen, Sorten, Bohnen, Pausen, Einstellungen (ein Dokument, JSON-Text)
+  // buchungen/{monat}    Buchungen und Zahlungen eines Kalendermonats (UTC), je bis zu 2000
+  // teams/{code}/bestellungen   die Warteschlange (offene Bestellungen)
+  // Beim Speichern wird nur geschrieben, was sich gegenüber dem letzten Stand geändert hat.
+  let state = defaultState();
+  let ready = false;          // Daten geladen, App sichtbar
+  let adminUser = null;       // angemeldetes Google-Konto
+  const synced = { stamm: null, buckets: new Map() }; // zuletzt gespeicherter bzw. empfangener Stand
+
+  const stammRef = () => doc(db, 'privat', 'stamm');
+  const bucketRef = id => doc(db, 'buchungen', id);
+  const teamRef = code => doc(db, 'teams', code);
+  const orderCollection = () => collection(db, 'teams', state.settings.teamCode, 'bestellungen');
+  const orderRef = id => doc(db, 'teams', state.settings.teamCode, 'bestellungen', id);
+
+  function stammOf(st) {
+    return { version: DATA_VERSION, people: st.people, groups: st.groups, coffees: st.coffees, beans: st.beans, pauses: st.pauses, settings: st.settings };
+  }
+
+  function bucketsOf(entries) {
+    const months = new Map();
+    for (const e of entries) {
+      const month = new Date(e.ts).toISOString().slice(0, 7);
+      if (!months.has(month)) months.set(month, []);
+      months.get(month).push(e);
+    }
+    const buckets = new Map();
+    for (const [month, list] of months) {
+      list.sort((a, b) => a.ts - b.ts || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+      for (let i = 0; i * BUCKET_SIZE < list.length; i++) {
+        buckets.set(i ? `${month}-${i + 1}` : month, JSON.stringify(list.slice(i * BUCKET_SIZE, (i + 1) * BUCKET_SIZE)));
+      }
+    }
+    return buckets;
+  }
+
+  function entriesFromBuckets() {
+    const all = [];
+    for (const json of synced.buckets.values()) {
+      try { all.push(...JSON.parse(json)); } catch (e) { console.error('Buchungsmonat nicht lesbar', e); }
+    }
+    return all;
+  }
+
+  // Speichert alle Änderungen gemeinsam mit optionalen weiteren Schreibvorgängen in einem Rutsch
+  function save(extra = []) {
+    if (!ready) return;
+    const writes = [...extra];
+    const stamm = JSON.stringify(stammOf(state));
+    if (stamm !== synced.stamm) {
+      if (stamm.length > 900000) toast('Achtung: Die Stammdaten werden sehr groß (Notizen kürzen).', { error: true });
+      synced.stamm = stamm;
+      writes.push(['set', stammRef(), { daten: stamm, version: DATA_VERSION, geaendert: serverTimestamp() }]);
+    }
+    const buckets = bucketsOf(state.entries);
+    for (const [id, json] of buckets) {
+      if (synced.buckets.get(id) === json) continue;
+      synced.buckets.set(id, json);
+      writes.push(['set', bucketRef(id), { daten: json, geaendert: serverTimestamp() }]);
+    }
+    for (const id of [...synced.buckets.keys()]) {
+      if (buckets.has(id)) continue;
+      synced.buckets.delete(id);
+      writes.push(['delete', bucketRef(id)]);
+    }
+    commit(writes);
+    updateOrderBadge();
+  }
+
+  // Schreibvorgänge [art, ref, daten] bündeln; offline werden sie später übertragen
+  function commit(writes) {
+    for (let i = 0; i < writes.length; i += 450) {
+      const batch = writeBatch(db);
+      for (const [op, ref, data] of writes.slice(i, i + 450)) {
+        if (op === 'set') batch.set(ref, data);
+        else if (op === 'update') batch.update(ref, data);
+        else batch.delete(ref);
+      }
+      batch.commit().catch(writeFailed);
+    }
+  }
+
+  function writeFailed(err) {
+    console.error(err);
+    toast(err && err.code === 'permission-denied'
+      ? 'Speichern abgelehnt: keine Berechtigung.'
+      : 'Speichern fehlgeschlagen – bitte die Verbindung prüfen.', { error: true });
+  }
+
+  function newTeamCode() {
+    const bytes = crypto.getRandomValues(new Uint8Array(8));
+    const chars = [...bytes].map(b => CODE_CHARS[b % CODE_CHARS.length]).join('');
+    return `${chars.slice(0, 4)}-${chars.slice(4)}`;
+  }
+
+  let statsPeriod = 'monat';
+  try {
+    const p = localStorage.getItem(PERIOD_KEY);
+    if (PERIODS.some(([k]) => k === p)) statsPeriod = p;
+  } catch (e) { /* ignorieren */ }
+
+  // Ansichtseinstellungen der Übersicht (bleiben nach dem Neuladen erhalten)
+  let sortMode = 'name';
+  let collapsed = new Set();
+  try {
+    const m = localStorage.getItem(SORT_KEY);
+    if (SORTS.some(([k]) => k === m)) sortMode = m;
+    const c = JSON.parse(localStorage.getItem(COLLAPSED_KEY) || '[]');
+    if (Array.isArray(c)) collapsed = new Set(c.filter(x => typeof x === 'string'));
+  } catch (e) { /* ignorieren */ }
+  const savePref = (key, value) => { try { localStorage.setItem(key, value); } catch (e) { /* ignorieren */ } };
+
+  const personById = id => state.people.find(p => p.id === id);
+  const coffeeById = id => state.coffees.find(c => c.id === id);
+  const beanById = id => state.beans.find(b => b.id === id);
+  const sortedPeople = () => [...state.people].sort((a, b) => a.name.localeCompare(b.name, 'de', { sensitivity: 'base' }));
+  const entriesOf = pid => state.entries.filter(e => e.personId === pid);
+  const groupById = id => state.groups.find(g => g.id === id);
+  const byName = (a, b) => a.name.localeCompare(b.name, 'de', { sensitivity: 'base' });
+
+  // Buchung mit Preis, Rabatt und Herstellungskosten zum Zeitpunkt der Buchung
+  const bookingFor = (p, c, ts) => ({
+    id: uid(), personId: p.id, type: 'coffee', coffeeId: c.id, label: c.name,
+    amount: discountedPrice(c.price, p.discount), listPrice: c.price, discount: p.discount, cost: c.cost, ts,
+  });
+
+  // Saldo, Anzahl Kaffees und letzte Buchung je Person in einem Durchlauf
+  function personStats() {
+    const stats = new Map(state.people.map(p => [p.id, { balance: 0, count: 0, last: 0 }]));
+    for (const e of state.entries) {
+      const st = stats.get(e.personId);
+      if (!st) continue;
+      if (e.type === 'coffee') {
+        st.balance += e.amount;
+        st.count++;
+        if (e.ts > st.last) st.last = e.ts;
+      } else {
+        st.balance -= e.amount;
+      }
+    }
+    return stats;
+  }
+
+  function sortPeople(list, mode, stats) {
+    const v = p => stats.get(p.id);
+    const compare = {
+      schulden: (a, b) => v(b).balance - v(a).balance,
+      guthaben: (a, b) => v(a).balance - v(b).balance,
+      haeufig: (a, b) => v(b).count - v(a).count,
+      zuletzt: (a, b) => v(b).last - v(a).last,
+    }[mode];
+    return [...list].sort((a, b) => (compare ? compare(a, b) : 0) || byName(a, b));
+  }
+
+  // Personen nach Gruppen ordnen: Gruppen alphabetisch, "Ohne Gruppe" am Ende (nur wenn belegt)
+  function groupSections(people) {
+    const sections = [...state.groups].sort(byName).map(g => ({ key: g.id, name: g.name, people: [] }));
+    const none = { key: NO_GROUP, name: NO_GROUP_NAME, people: [] };
+    const byKey = new Map(sections.map(sec => [sec.key, sec]));
+    for (const p of people) (byKey.get(p.groupId) || none).people.push(p);
+    return none.people.length ? [...sections, none] : sections;
+  }
+
+  const groupOptions = selected => `<option value="">${NO_GROUP_NAME}</option>` +
+    [...state.groups].sort(byName).map(g => `<option value="${g.id}"${g.id === selected ? ' selected' : ''}>${esc(g.name)}</option>`).join('');
+
+  // Positiv = Person schuldet etwas, negativ = Guthaben
+  function balanceOf(pid) {
+    let b = 0;
+    for (const e of state.entries) if (e.personId === pid) b += e.type === 'coffee' ? e.amount : -e.amount;
+    return b;
+  }
+
+  function status(b) {
+    if (b > 0) return { cls: 'debt', tag: 'offen', hero: 'schuldet dir' };
+    if (b < 0) return { cls: 'credit', tag: 'Guthaben', hero: 'Guthaben' };
+    return { cls: 'zero', tag: 'ausgeglichen', hero: 'alles bezahlt' };
+  }
+
+  function avatarColor(name) {
+    let h = 0;
+    for (const ch of name) h = (h * 31 + ch.codePointAt(0)) >>> 0;
+    return AVATAR_COLORS[h % AVATAR_COLORS.length];
+  }
+
+  function initials(name) {
+    const parts = name.split(' ').filter(Boolean);
+    const first = Array.from(parts[0] || '?')[0];
+    const last = parts.length > 1 ? Array.from(parts[parts.length - 1])[0] : '';
+    return (first + last).toLocaleUpperCase('de');
+  }
+
+  const bookingsText = n => n === 0 ? 'keine Buchungen' : n === 1 ? 'eine Buchung' : `${n} Buchungen`;
+
+  // ---------- Meldung ----------
+  const toastEl = $('#toast');
+  let toastTimer = 0;
+
+  function toast(msg, opts = {}) {
+    clearTimeout(toastTimer);
+    toastEl.className = 'toast' + (opts.error ? ' error' : '');
+    toastEl.innerHTML =
+      `<span class="toast-icon">${opts.error ? ICON.alert : ICON.check}</span>` +
+      `<span class="toast-msg">${esc(msg)}</span>` +
+      (opts.undo ? '<button type="button" class="toast-undo">Rückgängig</button>' : '');
+    if (opts.undo) {
+      toastEl.querySelector('.toast-undo').addEventListener('click', () => {
+        opts.undo();
+        toast('Rückgängig gemacht');
+      });
+    }
+    void toastEl.offsetWidth;
+    toastEl.classList.add('show');
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), opts.undo ? 5000 : 2600);
+  }
+
+  // ---------- Sicherheitsabfrage ----------
+  const dlg = $('#dlg');
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close('cancel'); });
+
+  function confirmDialog({ title, html, confirmText = 'OK', danger = false }) {
+    if (typeof dlg.showModal !== 'function') {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      return Promise.resolve(window.confirm(title + '\n\n' + tmp.textContent));
+    }
+    $('#dlgTitle').textContent = title;
+    $('#dlgMsg').innerHTML = html;
+    const ok = $('#dlgOk');
+    ok.textContent = confirmText;
+    ok.className = 'btn ' + (danger ? 'danger' : 'primary');
+    dlg.returnValue = '';
+    dlg.showModal();
+    return new Promise(resolve => {
+      dlg.addEventListener('close', () => resolve(dlg.returnValue === 'ok'), { once: true });
+    });
+  }
+
+  // ---------- Navigation ----------
+  const TABS = [
+    ['kollegen', '#/', 'Kollegen', ICON.users],
+    ['bestellungen', '#/bestellungen', 'Bestellungen', ICON.orders],
+    ['bohnen', '#/bohnen', 'Bohnen', ICON.bean],
+    ['auswertung', '#/auswertung', 'Auswertung', ICON.chart],
+    ['einstellungen', '#/einstellungen', 'Einstellungen', ICON.gear],
+  ];
+  const TAB_OF = {
+    overview: 'kollegen', person: 'kollegen', personSettings: 'kollegen',
+    orders: 'bestellungen', orderPick: 'bestellungen', orderDrink: 'bestellungen',
+    beans: 'bohnen', bean: 'bohnen', stats: 'auswertung', settings: 'einstellungen',
+  };
+
+  const tabbar = $('#tabbar');
+  tabbar.innerHTML = `<div class="tabbar-inner">${TABS.map(([key, href, label, icon]) =>
+    `<a class="tab" href="${href}" data-tab="${key}"><span class="tab-ico">${icon}${key === 'bestellungen' ? '<span class="tab-badge" id="orderBadge" hidden></span>' : ''}</span><span>${label}</span></a>`).join('')}</div>`;
+
+  // Zahl offener Bestellungen am Reiter
+  function updateOrderBadge() {
+    const badge = document.getElementById('orderBadge');
+    if (!badge) return;
+    const n = state.orders.length;
+    badge.textContent = n ? (n > 99 ? '99+' : String(n)) : '';
+    badge.hidden = n === 0;
+    badge.closest('.tab').setAttribute('aria-label', n ? `Bestellungen, ${n} offen` : 'Bestellungen');
+  }
+  updateOrderBadge();
+
+  let currentView = null;
+  let currentId = null;
+  let lastHash = null;
+
+  function parseHash() {
+    let parts;
+    try { parts = location.hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent); } catch (e) { parts = []; }
+    switch (parts[0]) {
+      case 'p': return parts[2] === 'einstellungen' ? { view: 'personSettings', id: parts[1] } : { view: 'person', id: parts[1] };
+      case 'bestellungen':
+        if (parts[1] === 'neu') return parts[2] ? { view: 'orderDrink', id: parts[2] } : { view: 'orderPick' };
+        return { view: 'orders' };
+      case 'bohnen': return parts[1] ? { view: 'bean', id: parts[1] } : { view: 'beans' };
+      case 'auswertung': return { view: 'stats' };
+      case 'einstellungen': return { view: 'settings' };
+      default: return { view: 'overview' };
+    }
+  }
+
+  function go(hash) {
+    if (location.hash === hash) return;
+    try {
+      history.pushState({ kk: true }, '', hash);
+      onRoute();
+    } catch (e) {
+      location.hash = hash;
+    }
+  }
+
+  // Zurück zur vorherigen Seite; wurde die Seite direkt aufgerufen, zur übergeordneten Seite
+  function goBack(fallback = '#/') {
+    if (history.state && history.state.kk) {
+      history.back();
+      return;
+    }
+    try {
+      history.replaceState(null, '', fallback);
+      onRoute();
+    } catch (e) {
+      location.replace(fallback);
+    }
+  }
+
+  // Seite ersetzen statt hinzufügen (Schritte beim Vormerken einer Bestellung)
+  function replaceRoute(hash) {
+    try {
+      history.replaceState(history.state, '', hash);
+      onRoute();
+    } catch (e) {
+      location.replace(hash);
+    }
+  }
+
+  function onRoute() {
+    if (location.hash === lastHash) return;
+    pick = null;
+    render();
+    window.scrollTo(0, 0);
+  }
+
+  window.addEventListener('popstate', onRoute);
+  window.addEventListener('hashchange', onRoute);
+
+  // ---------- Ansichten ----------
+  function render() {
+    let r = parseHash();
+    const redirect = (hash, route) => {
+      try { history.replaceState(null, '', hash); } catch (e) { /* ignorieren */ }
+      return route;
+    };
+    if ((r.view === 'person' || r.view === 'personSettings') && !personById(r.id)) r = redirect('#/', { view: 'overview' });
+    if (r.view === 'bean' && r.id !== 'neu' && !beanById(r.id)) r = redirect('#/bohnen', { view: 'beans' });
+    if (r.view === 'orderDrink' && !personById(r.id)) r = redirect('#/bestellungen/neu', { view: 'orderPick' });
+    lastHash = location.hash;
+    currentView = r.view;
+    currentId = r.id || null;
+    const views = {
+      overview: viewOverview, person: viewPerson, personSettings: viewPersonSettings,
+      beans: viewBeans, bean: viewBean, stats: viewStats, settings: viewSettings,
+      orders: viewOrders, orderPick: viewOrderPick, orderDrink: viewOrderDrink,
+    };
+    app.innerHTML = views[r.view](r.id);
+    updateOrderBadge();
+    const activeTab = TAB_OF[r.view];
+    tabbar.querySelectorAll('.tab').forEach(t => {
+      if (t.dataset.tab === activeTab) t.setAttribute('aria-current', 'page');
+      else t.removeAttribute('aria-current');
+    });
+  }
+
+  // Nach Datenänderung die aktuelle Ansicht auffrischen, ohne die Scrollposition zu verlieren
+  function refresh() {
+    if (currentView === 'person' && personById(currentId) && $('#hero')) updatePersonView(true);
+    else render();
+  }
+
+  // ----- Kollegen (Übersicht) -----
+  function relativeTime(ts) {
+    const d = new Date(ts);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    if (d.toDateString() === today.toDateString()) return `heute, ${timeFmt.format(d)} Uhr`;
+    if (d.toDateString() === yesterday.toDateString()) return `gestern, ${timeFmt.format(d)} Uhr`;
+    return `am ${dateFmt.format(d)}`;
+  }
+
+  function personRowHtml(p, st) {
+    const s = status(st.balance);
+    let sub = '';
+    if (sortMode === 'haeufig') sub = `${plural(st.count, 'Kaffee', 'Kaffees')} insgesamt`;
+    else if (sortMode === 'zuletzt') sub = st.last ? `zuletzt ${relativeTime(st.last)}` : 'noch nichts bestellt';
+    return `
+        <li data-name="${esc(p.name.toLocaleLowerCase('de'))}">
+          <button class="person-row" data-action="open" data-id="${p.id}">
+            <span class="avatar" style="--av:${avatarColor(p.name)}">${esc(initials(p.name))}</span>
+            <span class="pinfo"><span class="pname">${esc(p.name)}</span>${sub ? `<span class="psub">${sub}</span>` : ''}</span>
+            <span class="pbal ${s.cls}"><span class="amt">${euro(Math.abs(st.balance))}</span><span class="tag">${s.tag}</span></span>
+            <span class="chev">${ICON.chev}</span>
+          </button>
+        </li>`;
+  }
+
+  function viewOverview() {
+    const header = `
+      <header class="bar">
+        <h1 class="brand"><span class="brand-icon">${ICON.cup}</span>Kaffeekasse</h1>
+      </header>`;
+
+    if (!state.people.length) {
+      return header + `
+        <div class="empty">
+          <div class="empty-icon">${ICON.cupBig}</div>
+          <p>Noch keine Kollegen angelegt.</p>
+          <button class="btn primary" data-action="settings-add">${ICON.plus}Kollegen hinzufügen</button>
+        </div>`;
+    }
+
+    const stats = personStats();
+    const people = sortPeople(state.people, sortMode, stats);
+    let open = 0, credit = 0;
+    for (const st of stats.values()) {
+      if (st.balance > 0) open += st.balance; else credit -= st.balance;
+    }
+    const rows = list => `<ul class="people">${list.map(p => personRowHtml(p, stats.get(p.id))).join('')}</ul>`;
+    const hasGroups = state.groups.length > 0;
+    const list = !hasGroups ? rows(people) : groupSections(people).map(sec => {
+      const isCollapsed = collapsed.has(sec.key);
+      const groupOpen = sec.people.reduce((sum, p) => sum + Math.max(0, stats.get(p.id).balance), 0);
+      return `
+        <section class="grp${isCollapsed ? ' collapsed' : ''}" data-group="${sec.key}">
+          <button class="grp-head" data-action="toggle-group" data-id="${sec.key}" aria-expanded="${!isCollapsed}">
+            <span class="grp-chev">${ICON.chevDown}</span>
+            <span class="grp-name">${esc(sec.name)}</span>
+            <span class="grp-meta">
+              <span>${plural(sec.people.length, 'Person', 'Personen')}</span>
+              <span class="${groupOpen ? 'debt' : ''}">${groupOpen ? `${euro(groupOpen)} offen` : 'nichts offen'}</span>
+            </span>
+          </button>
+          <div class="grp-body">
+            ${sec.people.length ? rows(sec.people) : '<p class="empty-note grp-empty">Noch niemand in dieser Gruppe. Zuordnen kannst du Personen über das Zahnrad in ihrer Ansicht.</p>'}
+          </div>
+        </section>`;
+    }).join('');
+
+    return header + `
+      <section class="summary">
+        <div><span class="sum-lbl">Offen gesamt</span><span class="sum-amt ${open ? 'debt' : 'zero'}">${euro(open)}</span></div>
+        ${credit ? `<div><span class="sum-lbl">Guthaben gesamt</span><span class="sum-amt credit">${euro(credit)}</span></div>` : ''}
+      </section>
+      <div class="ov-tools">
+        <label class="sort-field">
+          <span class="sort-lbl">Sortieren</span>
+          <span class="select"><select id="sortSel">${SORTS.map(([key, label]) => `<option value="${key}"${key === sortMode ? ' selected' : ''}>${label}</option>`).join('')}</select></span>
+        </label>
+        ${hasGroups ? `
+        <div class="fold-btns">
+          <button type="button" class="btn small" data-action="expand-all">Alle ausklappen</button>
+          <button type="button" class="btn small" data-action="collapse-all">Alle einklappen</button>
+        </div>` : ''}
+      </div>
+      ${state.people.length > 6 ? '<input type="search" id="search" placeholder="Name suchen …" aria-label="Kollegen suchen" autocomplete="off">' : ''}
+      <div id="peopleList">${list}</div>
+      <p class="empty-note" id="noMatch" hidden>Niemand gefunden.</p>`;
+  }
+
+  // ----- Detailansicht einer Person (Kollegen können hier mitschauen: keine Kosten zeigen!) -----
+  function heroHtml(p, bump) {
+    const b = balanceOf(p.id);
+    const st = status(b);
+    return `
+      <div class="hero ${st.cls}${bump ? ' bump' : ''}">
+        <div class="hero-name">${esc(p.name)}</div>
+        ${p.note ? `<div class="hero-note">${esc(p.note)}</div>` : ''}
+        <div class="hero-amt">${euro(Math.abs(b))}</div>
+        <div class="hero-lbl">${st.hero}</div>
+      </div>`;
+  }
+
+  function payHintHtml(p) {
+    const b = balanceOf(p.id);
+    return b > 0 ? `<button type="button" class="chip" data-action="fill-pay">Offenen Betrag einsetzen (${euro(b)})</button>` : '';
+  }
+
+  function historyHtml(pid) {
+    const list = entriesOf(pid).sort((a, b) => b.ts - a.ts);
+    if (!list.length) return '<p class="empty-note">Noch keine Buchungen.</p>';
+    let out = '';
+    let lastDay = '';
+    for (const e of list) {
+      const day = dayLabel(e.ts);
+      if (day !== lastDay) {
+        if (lastDay) out += '</ul>';
+        out += `<h3 class="day">${day}</h3><ul class="hist">`;
+        lastDay = day;
+      }
+      const isCoffee = e.type === 'coffee';
+      const label = isCoffee ? e.label : 'Zahlung';
+      const discount = isCoffee && e.discount ? ` · ${numFmt.format(e.discount)} % Rabatt` : '';
+      out += `
+        <li class="hrow ${e.type}">
+          <span class="hicon">${isCoffee ? ICON.cup : ICON.coin}</span>
+          <span class="hmain">
+            <span class="hlabel">${esc(label)}</span>
+            <span class="htime">${dateFmt.format(e.ts)}, ${timeFmt.format(e.ts)} Uhr${discount}</span>
+          </span>
+          <span class="hamt">${isCoffee ? '+' : '−'}${euro(e.amount)}</span>
+          <button class="icon-btn del" data-action="del-entry" data-id="${e.id}" aria-label="${esc(label)} vom ${dateFmt.format(e.ts)} löschen" title="Eintrag löschen">${ICON.trash}</button>
+        </li>`;
+    }
+    return out + '</ul>';
+  }
+
+  function viewPerson(id) {
+    const p = personById(id);
+    const coffees = state.coffees;
+    const count = entriesOf(p.id).length;
+    return `
+      <header class="bar">
+        <button class="back" data-action="back">${ICON.back}<span>Übersicht</span></button>
+        <span class="spacer"></span>
+        <button class="icon-btn" data-action="person-settings" data-id="${p.id}" aria-label="Einstellungen für ${esc(p.name)}" title="Einstellungen für ${esc(p.name)}">${ICON.gear}</button>
+      </header>
+      <section id="hero">${heroHtml(p)}</section>
+
+      <section class="card">
+        <h2>Kaffee anrechnen ${p.discount ? `<span class="pill">inkl. ${numFmt.format(p.discount)} % Rabatt</span>` : ''}</h2>
+        ${coffees.length
+          ? `<div class="coffee-grid">${coffees.map(c => {
+              const price = discountedPrice(c.price, p.discount);
+              return `
+              <button class="coffee-btn" data-action="book" data-id="${c.id}" aria-label="${esc(c.name)} – ${euro(price)} anrechnen">
+                <span>${esc(c.name)}</span><span class="price">${euro(price)}</span>
+              </button>`;
+            }).join('')}</div>`
+          : '<p class="empty-note">Noch keine Kaffeesorten angelegt. <a href="#/einstellungen" data-action="goto-settings">Zu den Einstellungen</a></p>'}
+      </section>
+
+      <section class="card">
+        <h2><label for="payInput">Zahlung erfassen</label></h2>
+        <form class="pay-row" data-form="pay" novalidate>
+          <div class="money">
+            <input type="text" id="payInput" inputmode="decimal" placeholder="z. B. 5,00" autocomplete="off" enterkeyhint="done">
+            <span aria-hidden="true">€</span>
+          </div>
+          <button class="btn primary" type="submit">Erfassen</button>
+        </form>
+        <div id="payHint">${payHintHtml(p)}</div>
+      </section>
+
+      <section class="card">
+        <h2>Verlauf <span class="count" id="histCount">${count}</span></h2>
+        <div id="history">${historyHtml(p.id)}</div>
+      </section>`;
+  }
+
+  function updatePersonView(bump) {
+    const p = personById(currentId);
+    if (!p) { render(); return; }
+    $('#hero').innerHTML = heroHtml(p, bump);
+    $('#history').innerHTML = historyHtml(p.id);
+    $('#histCount').textContent = entriesOf(p.id).length;
+    $('#payHint').innerHTML = payHintHtml(p);
+  }
+
+  // ----- Einstellungen einer Person -----
+  function discountPreviewHtml(discount) {
+    if (discount === null) return '<span class="debt">Bitte einen Wert zwischen 0 und 100 eingeben.</span>';
+    if (!state.coffees.length) return '';
+    return 'Neue Preise: ' + state.coffees.map(c => {
+      const price = discountedPrice(c.price, discount);
+      return `${esc(c.name)} <strong>${euro(price)}</strong>${price !== c.price ? ` <s>${euro(c.price)}</s>` : ''}`;
+    }).join(' · ');
+  }
+
+  function viewPersonSettings(id) {
+    const p = personById(id);
+    return `
+      <header class="bar">
+        <button class="back" data-action="back" data-fallback="#/p/${encodeURIComponent(p.id)}">${ICON.back}<span>Zurück</span></button>
+        <h1 class="bar-title">${esc(p.name)}</h1>
+      </header>
+
+      <form class="card form" data-form="person-settings" novalidate>
+        <label class="field">
+          <span class="field-lbl">Name</span>
+          <input type="text" id="psName" value="${esc(p.name)}" maxlength="${MAX_NAME}" autocomplete="off">
+        </label>
+        <div class="field">
+          <label class="field-lbl" for="psGroup">Gruppe</label>
+          ${state.groups.length
+            ? `<span class="select"><select id="psGroup">${groupOptions(p.groupId)}</select></span>`
+            : '<p class="field-hint">Noch keine Gruppen angelegt. <a href="#/einstellungen" data-action="goto-settings">Gruppen in den Einstellungen anlegen</a></p>'}
+        </div>
+        <label class="field">
+          <span class="field-lbl">Lieblingsgetränk</span>
+          <span class="select"><select id="psFav"><option value="">Keins</option>${state.coffees.map(c =>
+            `<option value="${c.id}"${c.id === p.favoriteCoffeeId ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select></span>
+          <span class="field-hint">Wird beim Vormerken einer Bestellung automatisch ausgewählt.</span>
+        </label>
+        <div class="field">
+          <label class="field-lbl" for="psDiscount">Rabatt</label>
+          <div class="money pct-field">
+            <input type="text" id="psDiscount" inputmode="decimal" value="${p.discount ? numFmt.format(p.discount) : ''}" placeholder="0" autocomplete="off">
+            <span aria-hidden="true">%</span>
+          </div>
+          <p class="field-hint">Wird automatisch auf jeden neuen Kaffee angerechnet. Bereits gebuchte Kaffees bleiben unverändert.</p>
+          <p class="preview" id="discountPreview">${discountPreviewHtml(p.discount)}</p>
+        </div>
+        <label class="field">
+          <span class="field-lbl">Notiz</span>
+          <textarea id="psNote" rows="3" maxlength="${MAX_NOTE}" placeholder="z. B. trinkt Hafermilch">${esc(p.note)}</textarea>
+          <span class="field-hint">Die Notiz steht in der Buchungsansicht unter dem Namen.</span>
+        </label>
+        <button class="btn primary block" type="submit">Speichern</button>
+      </form>
+
+      <section class="card">
+        <h2>Person löschen</h2>
+        <p class="hint" style="margin:0 0 12px">Entfernt ${esc(p.name)} mit allen Buchungen.</p>
+        <button class="btn danger-outline block" data-action="del-person" data-id="${p.id}">${ICON.trash}${esc(p.name)} löschen</button>
+      </section>`;
+  }
+
+  // ----- Bestellungen (Warteschlange) – Kollegen können mitschauen: keine Kosten anzeigen! -----
+  let pick = null;          // Auswahl beim Vormerken: { personId, coffeeId, qty }
+  let lastAddGroup = null;  // zuletzt gewählte Gruppe beim Anlegen einer Person
+
+  // "3× Cappuccino, 2× Espresso, 1× Kaffee" – häufigste zuerst, sonst in Reihenfolge der Warteschlange
+  function orderSummary(orders) {
+    const counts = new Map();
+    for (const o of orders) {
+      const c = coffeeById(o.coffeeId);
+      if (!c) continue;
+      const item = counts.get(c.id) || { name: c.name, n: 0 };
+      item.n++;
+      counts.set(c.id, item);
+    }
+    return [...counts.values()].sort((a, b) => b.n - a.n).map(x => `${x.n}× ${esc(x.name)}`).join(', ');
+  }
+
+  function viewOrders() {
+    const orders = state.orders.filter(o => personById(o.personId) && coffeeById(o.coffeeId));
+    const header = `
+      <header class="bar">
+        <h1 class="page-title">Bestellungen</h1>
+        ${orders.length ? `<span class="count big">${orders.length} offen</span>` : ''}
+      </header>`;
+    if (!orders.length) {
+      return header + `
+        <div class="empty">
+          <div class="empty-icon">${ICON.ordersBig}</div>
+          <p>Keine offenen Bestellungen.</p>
+          <button class="btn primary" data-action="new-order">${ICON.plus}Bestellung hinzufügen</button>
+        </div>`;
+    }
+    const persons = new Set(orders.map(o => o.personId)).size;
+    const items = orders.map((o, i) => {
+      const p = personById(o.personId);
+      const c = coffeeById(o.coffeeId);
+      return `
+        <li class="q-item" data-id="${o.id}">
+          <div class="q-row">
+            <span class="q-handle" title="Zum Verschieben ziehen" aria-hidden="true">${ICON.grip}</span>
+            <span class="q-num">${i + 1}.</span>
+            <span class="q-main">
+              <strong class="q-name">${esc(p.name)}</strong>
+              <span class="q-drink">${esc(c.name)} · ${euro(discountedPrice(c.price, p.discount))}</span>
+              ${p.note ? `<span class="q-note">${esc(p.note)}</span>` : ''}
+            </span>
+            <span class="q-move">
+              <button class="icon-btn" data-action="order-up" data-id="${o.id}" aria-label="${esc(p.name)} nach oben" ${i === 0 ? 'disabled' : ''}>${ICON.up}</button>
+              <button class="icon-btn" data-action="order-down" data-id="${o.id}" aria-label="${esc(p.name)} nach unten" ${i === orders.length - 1 ? 'disabled' : ''}>${ICON.down}</button>
+            </span>
+          </div>
+          <div class="q-acts">
+            <button class="btn small ghost" data-action="order-cancel" data-id="${o.id}">Stornieren</button>
+            <button class="btn small primary" data-action="order-done" data-id="${o.id}">${ICON.check}Fertig</button>
+          </div>
+        </li>`;
+    }).join('');
+    return header + `
+      <section class="card q-summary">
+        <p class="q-sum">${orderSummary(orders)}</p>
+        <p class="q-sub">${plural(orders.length, 'Getränk', 'Getränke')} für ${plural(persons, 'Person', 'Personen')}</p>
+      </section>
+      <button class="btn primary block" data-action="new-order">${ICON.plus}Bestellung hinzufügen</button>
+      <div class="q-tools">
+        <button class="btn small" data-action="sort-orders">Nach Getränk sortieren</button>
+        <button class="btn small" data-action="all-done">${ICON.check}Alle fertig</button>
+      </div>
+      <ol class="queue" id="queue">${items}</ol>
+      <p class="hint">Reihenfolge ändern: am Griff links ziehen oder die Pfeile nutzen.</p>`;
+  }
+
+  // Schritt 1: Person auswählen (nach Gruppen geordnet)
+  function viewOrderPick() {
+    const header = `
+      <header class="bar">
+        <button class="back" data-action="back" data-fallback="#/bestellungen">${ICON.back}<span>Bestellungen</span></button>
+        <h1 class="bar-title">Wer bestellt?</h1>
+      </header>`;
+    if (!state.people.length) {
+      return header + '<p class="notice">Noch keine Kollegen angelegt. <a href="#/einstellungen" data-action="goto-settings">Kollegen in den Einstellungen anlegen</a></p>';
+    }
+    const people = [...state.people].sort(byName);
+    const openCount = new Map();
+    for (const o of state.orders) openCount.set(o.personId, (openCount.get(o.personId) || 0) + 1);
+    const row = p => {
+      const fav = coffeeById(p.favoriteCoffeeId);
+      const n = openCount.get(p.id) || 0;
+      return `
+        <li data-name="${esc(p.name.toLocaleLowerCase('de'))}">
+          <button class="person-row" data-action="pick-person" data-id="${p.id}">
+            <span class="avatar" style="--av:${avatarColor(p.name)}">${esc(initials(p.name))}</span>
+            <span class="pinfo"><span class="pname">${esc(p.name)}</span><span class="psub">${fav ? `${ICON.star} ${esc(fav.name)}` : 'kein Lieblingsgetränk'}</span></span>
+            ${n ? `<span class="pill">${n} vorgemerkt</span>` : ''}
+            <span class="chev">${ICON.chev}</span>
+          </button>
+        </li>`;
+    };
+    const list = state.groups.length
+      ? groupSections(people).filter(sec => sec.people.length).map(sec => `
+        <section class="pick-sec">
+          <h2 class="section-title">${esc(sec.name)}</h2>
+          <ul class="people">${sec.people.map(row).join('')}</ul>
+        </section>`).join('')
+      : `<ul class="people">${people.map(row).join('')}</ul>`;
+    return header + `
+      ${people.length > 6 ? '<input type="search" id="search" placeholder="Name suchen …" aria-label="Person suchen" autocomplete="off">' : ''}
+      <div id="peopleList">${list}</div>
+      <p class="empty-note" id="noMatch" hidden>Niemand gefunden.</p>`;
+  }
+
+  // Schritt 2: Getränk und Anzahl wählen; Lieblingsgetränk ist vorausgewählt
+  function viewOrderDrink(id) {
+    const p = personById(id);
+    if (!pick || pick.personId !== id) {
+      pick = { personId: id, coffeeId: coffeeById(p.favoriteCoffeeId) ? p.favoriteCoffeeId : null, qty: 1 };
+    }
+    if (pick.coffeeId && !coffeeById(pick.coffeeId)) pick.coffeeId = null;
+    const group = groupById(p.groupId);
+    const info = [group ? esc(group.name) : '', p.discount ? `${numFmt.format(p.discount)} % Rabatt` : ''].filter(Boolean).join(' · ');
+    return `
+      <header class="bar">
+        <button class="back" data-action="pick-back">${ICON.back}<span>Person</span></button>
+        <h1 class="bar-title">Bestellung</h1>
+      </header>
+      <div class="pick-person">
+        <span class="avatar" style="--av:${avatarColor(p.name)}">${esc(initials(p.name))}</span>
+        <span class="pinfo">
+          <strong class="pname">${esc(p.name)}</strong>
+          ${info ? `<span class="psub">${info}</span>` : ''}
+          ${p.note ? `<span class="psub">${esc(p.note)}</span>` : ''}
+        </span>
+      </div>
+      <section class="card">
+        <h2>Getränk</h2>
+        ${state.coffees.length ? `
+        <div class="coffee-grid" role="radiogroup" aria-label="Getränk">
+          ${state.coffees.map(c => `
+          <button type="button" class="choice-btn" role="radio" aria-checked="${c.id === pick.coffeeId}" data-action="choose-coffee" data-id="${c.id}">
+            <span>${esc(c.name)}</span>
+            <span class="price">${euro(discountedPrice(c.price, p.discount))}</span>
+            ${c.id === p.favoriteCoffeeId ? `<span class="fav">${ICON.star}Lieblingsgetränk</span>` : ''}
+          </button>`).join('')}
+        </div>
+        <div class="qty">
+          <span class="field-lbl" id="qtyLbl">Anzahl</span>
+          <span class="stepper" role="group" aria-labelledby="qtyLbl">
+            <button type="button" data-action="qty" data-id="-1" aria-label="Eins weniger">−</button>
+            <output id="qty" aria-live="polite">${pick.qty}</output>
+            <button type="button" data-action="qty" data-id="1" aria-label="Eins mehr">+</button>
+          </span>
+        </div>` : '<p class="empty-note">Noch keine Kaffeesorten angelegt.</p>'}
+      </section>
+      <div class="pick-actions">
+        <button class="btn primary block" data-action="place-order" id="placeBtn" ${pick.coffeeId ? '' : 'disabled'}>${placeLabel()}</button>
+        <button class="btn block" data-action="place-order-more" ${pick.coffeeId ? '' : 'disabled'}>Vormerken &amp; weiteres Getränk</button>
+      </div>`;
+  }
+
+  function placeLabel() {
+    const c = pick && coffeeById(pick.coffeeId);
+    return c ? `${pick.qty}× ${esc(c.name)} vormerken` : 'Getränk auswählen';
+  }
+
+  function updatePickUi() {
+    app.querySelectorAll('.choice-btn').forEach(b => b.setAttribute('aria-checked', String(b.dataset.id === pick.coffeeId)));
+    $('#qty').textContent = pick.qty;
+    $('#placeBtn').innerHTML = placeLabel();
+    app.querySelectorAll('[data-action^="place-order"]').forEach(b => { b.disabled = !pick.coffeeId; });
+  }
+
+  // ----- Bohnen -----
+  function beanPriceText(b) {
+    if (b.packPrice !== null && b.packSize !== null) {
+      return `${euro(b.packPrice)} pro ${grams(b.packSize)} (${euro(Math.round(b.packPrice * 1000 / b.packSize))}/kg)`;
+    }
+    if (b.packPrice !== null) return `${euro(b.packPrice)} pro Packung`;
+    if (b.packSize !== null) return `Packung: ${grams(b.packSize)}`;
+    return '';
+  }
+
+  function viewBeans() {
+    const header = `
+      <header class="bar">
+        <h1 class="page-title">Bohnen</h1>
+        <button class="btn small primary" data-action="new-bean">${ICON.plus}Neue Bohne</button>
+      </header>`;
+    if (!state.beans.length) {
+      return header + `
+        <div class="empty">
+          <div class="empty-icon">${ICON.beanBig}</div>
+          <p>Noch keine Bohnen angelegt.</p>
+          <button class="btn primary" data-action="new-bean">${ICON.plus}Erste Bohne anlegen</button>
+        </div>`;
+    }
+    const active = state.beans.find(b => b.active);
+    const others = state.beans.filter(b => b !== active)
+      .sort((a, b) => a.name.localeCompare(b.name, 'de', { sensitivity: 'base' }));
+    let html = header;
+    if (active) {
+      const price = beanPriceText(active);
+      html += `
+        <section class="bean-active" aria-label="Aktuell in Benutzung">
+          <span class="eyebrow">${ICON.checkSmall}Aktuell in Benutzung</span>
+          <h2>${esc(active.name)}</h2>
+          ${active.roaster ? `<div class="bean-roaster">${esc(active.roaster)}</div>` : ''}
+          <div class="grind"><span class="grind-lbl">Mahlgrad</span><span class="grind-val">${active.grind ? esc(active.grind) : '–'}</span></div>
+          ${active.notes ? `<p class="bean-notes">${esc(active.notes)}</p>` : ''}
+          ${price ? `<div class="bean-meta">${price}</div>` : ''}
+          <button class="btn small" data-action="edit-bean" data-id="${active.id}">Bearbeiten</button>
+        </section>`;
+    } else {
+      html += '<p class="notice">Keine Bohne ist als „in Benutzung“ markiert. Tippe bei der Bohne, die gerade in der Maschine ist, auf „Verwenden“.</p>';
+    }
+    if (others.length) {
+      html += `
+        <h2 class="section-title">${active ? 'Weitere Bohnen' : 'Alle Bohnen'}</h2>
+        <ul class="bean-list">${others.map(b => {
+          const sub = [b.roaster && esc(b.roaster), b.grind && `Mahlgrad ${esc(b.grind)}`, beanPriceText(b)].filter(Boolean).join(' · ');
+          return `
+          <li class="bean-item">
+            <button class="bean-main" data-action="edit-bean" data-id="${b.id}">
+              <strong>${esc(b.name)}</strong>
+              ${sub ? `<span class="bean-sub">${sub}</span>` : ''}
+            </button>
+            <button class="btn small" data-action="activate-bean" data-id="${b.id}">Verwenden</button>
+          </li>`;
+        }).join('')}</ul>`;
+    }
+    return html;
+  }
+
+  function viewBean(id) {
+    const isNew = id === 'neu';
+    const b = isNew
+      ? { name: '', roaster: '', grind: '', notes: '', packPrice: null, packSize: null, active: !state.beans.some(x => x.active) }
+      : beanById(id);
+    return `
+      <header class="bar">
+        <button class="back" data-action="back" data-fallback="#/bohnen">${ICON.back}<span>Bohnen</span></button>
+        <h1 class="bar-title">${isNew ? 'Neue Bohne' : 'Bohne bearbeiten'}</h1>
+      </header>
+
+      <form class="card form" data-form="bean" novalidate>
+        <label class="field">
+          <span class="field-lbl">Name</span>
+          <input type="text" id="bName" value="${esc(b.name)}" maxlength="${MAX_NAME}" placeholder="z. B. Espresso Classico" autocomplete="off">
+        </label>
+        <label class="field">
+          <span class="field-lbl">Röster / Marke</span>
+          <input type="text" id="bRoaster" value="${esc(b.roaster)}" maxlength="${MAX_SHORT}" autocomplete="off">
+        </label>
+        <label class="field">
+          <span class="field-lbl">Mahlgrad</span>
+          <input type="text" id="bGrind" value="${esc(b.grind)}" maxlength="${MAX_NAME}" placeholder="z. B. 12 oder fein" autocomplete="off">
+        </label>
+        <label class="field">
+          <span class="field-lbl">Notizen</span>
+          <textarea id="bNotes" rows="4" maxlength="${MAX_NOTE}" placeholder="Geschmack, Einstellungen am Gerät …">${esc(b.notes)}</textarea>
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span class="field-lbl">Kaufpreis pro Packung</span>
+            <span class="money"><input type="text" id="bPrice" inputmode="decimal" value="${b.packPrice !== null ? plain(b.packPrice) : ''}" placeholder="optional" autocomplete="off"><span aria-hidden="true">€</span></span>
+          </label>
+          <label class="field">
+            <span class="field-lbl">Packungsgröße</span>
+            <span class="money"><input type="text" id="bSize" inputmode="decimal" value="${b.packSize !== null ? b.packSize : ''}" placeholder="optional" autocomplete="off"><span aria-hidden="true">g</span></span>
+          </label>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="bActive" ${b.active ? 'checked' : ''}>
+          <span class="switch-ui" aria-hidden="true"></span>
+          <span>Aktuell in Benutzung</span>
+        </label>
+        <button class="btn primary block" type="submit">Speichern</button>
+      </form>
+      ${isNew ? '' : `<button class="btn danger-outline block" data-action="del-bean" data-id="${b.id}">${ICON.trash}Bohne löschen</button>`}`;
+  }
+
+  // ----- Auswertung (intern) -----
+  function periodRange(key) {
+    const now = new Date();
+    const y = now.getFullYear(), m = now.getMonth();
+    if (key === 'woche') {
+      const from = new Date(y, m, now.getDate() - ((now.getDay() + 6) % 7)); // Montag 0:00 Uhr
+      const to = new Date(from.getFullYear(), from.getMonth(), from.getDate() + 7);
+      const sunday = new Date(to.getFullYear(), to.getMonth(), to.getDate() - 1);
+      return { from: +from, to: +to, label: `Diese Woche · ${shortDateFmt.format(from)} – ${dateFmt.format(sunday)}` };
+    }
+    if (key === 'monat') return { from: +new Date(y, m, 1), to: +new Date(y, m + 1, 1), label: `Dieser Monat · ${monthFmt.format(now)}` };
+    if (key === 'jahr') return { from: +new Date(y, 0, 1), to: +new Date(y + 1, 0, 1), label: `Dieses Jahr · ${y}` };
+    const first = state.entries.reduce((min, e) => Math.min(min, e.ts), Infinity);
+    return { from: -Infinity, to: Infinity, label: first === Infinity ? 'Alle Buchungen' : `Alle Buchungen seit ${dateFmt.format(first)}` };
+  }
+
+  function computeStats(range) {
+    const s = { revenue: 0, listTotal: 0, cups: 0, cost: 0, unknownCost: 0, payments: 0, paymentCount: 0, bySort: new Map(), byPerson: new Map() };
+    for (const e of state.entries) {
+      if (e.ts < range.from || e.ts >= range.to) continue;
+      if (e.type === 'payment') {
+        s.payments += e.amount;
+        s.paymentCount++;
+        continue;
+      }
+      s.revenue += e.amount;
+      s.listTotal += e.listPrice;
+      s.cups++;
+      if (e.cost === null) s.unknownCost++;
+      else s.cost += e.cost;
+      // Nach Sorte gruppieren; umbenannte Sorten erscheinen unter ihrem aktuellen Namen
+      const coffee = e.coffeeId && coffeeById(e.coffeeId);
+      const key = e.coffeeId || 'name:' + e.label;
+      const sort = s.bySort.get(key) || { name: coffee ? coffee.name : e.label, count: 0, revenue: 0 };
+      sort.count++;
+      sort.revenue += e.amount;
+      s.bySort.set(key, sort);
+      const person = personById(e.personId);
+      const per = s.byPerson.get(e.personId) || { name: person ? person.name : '?', count: 0, revenue: 0 };
+      per.count++;
+      per.revenue += e.amount;
+      s.byPerson.set(e.personId, per);
+    }
+    s.profit = s.revenue - s.cost;
+    s.discountTotal = s.listTotal - s.revenue;
+    // Offene Schulden: aktueller Stand aller Kollegen, unabhängig vom Zeitraum
+    s.open = 0; s.credit = 0; s.debtors = 0;
+    for (const p of state.people) {
+      const b = balanceOf(p.id);
+      if (b > 0) { s.open += b; s.debtors++; } else s.credit -= b;
+    }
+    return s;
+  }
+
+  function breakdownHtml(title, rows, valueOf, textOf) {
+    if (!rows.length) return `<section class="card"><h2>${title}</h2><p class="empty-note">Keine Kaffees in diesem Zeitraum.</p></section>`;
+    const max = Math.max(...rows.map(valueOf)) || 1;
+    return `
+      <section class="card">
+        <h2>${title}</h2>
+        <ul class="bd">${rows.map(r => `
+          <li class="bd-row" title="${esc(r.name)}: ${textOf(r)}">
+            <div class="bd-top"><span class="bd-name">${esc(r.name)}</span><span class="bd-val">${textOf(r)}</span></div>
+            <div class="bd-track"><span class="bd-bar" style="width:${Math.max(2, valueOf(r) / max * 100).toFixed(1)}%"></span></div>
+          </li>`).join('')}
+        </ul>
+      </section>`;
+  }
+
+  function viewStats() {
+    const range = periodRange(statsPeriod);
+    const s = computeStats(range);
+    const kpi = (label, value, sub, cls = '') =>
+      `<div class="kpi ${cls}"><span class="lbl">${label}</span><span class="val">${value}</span>${sub ? `<span class="sub">${sub}</span>` : ''}</div>`;
+    const margin = s.revenue ? Math.round(s.profit / s.revenue * 100) : 0;
+    const sorts = [...s.bySort.values()].sort((a, b) => b.count - a.count || b.revenue - a.revenue);
+    const people = [...s.byPerson.values()].sort((a, b) => b.revenue - a.revenue || b.count - a.count);
+
+    return `
+      <header class="bar">
+        <h1 class="page-title">Auswertung</h1>
+        <span class="private">${ICON.lock}nur für dich</span>
+      </header>
+
+      <div class="seg" role="group" aria-label="Zeitraum">
+        ${PERIODS.map(([key, label]) => `<button type="button" data-action="period" data-id="${key}" aria-pressed="${key === statsPeriod}">${label}</button>`).join('')}
+      </div>
+      <p class="period-label">${range.label}</p>
+
+      <div class="kpis">
+        ${kpi('Umsatz', euro(s.revenue), `${plural(s.cups, 'Kaffee', 'Kaffees')} · nach Rabatt${s.discountTotal ? ` (${euro(s.discountTotal)} Rabatt)` : ''}`)}
+        ${kpi('Erhaltene Zahlungen', euro(s.payments), plural(s.paymentCount, 'Zahlung', 'Zahlungen'))}
+        ${kpi('Herstellungskosten', euro(s.cost), s.unknownCost ? `${ICON.alertSmall}${plural(s.unknownCost, 'Kaffee', 'Kaffees')} ohne Angabe` : '')}
+        ${kpi('Gewinn', signedEuro(s.profit), s.revenue
+          ? (s.profit >= 0 ? `<span class="pill credit">Marge ${margin} %</span>` : `<span class="pill debt">${ICON.alertSmall} Verlust</span>`)
+          : '')}
+        ${kpi('Offene Schulden aller Kollegen', euro(s.open), `Stand heute · ${plural(s.debtors, 'Person', 'Personen')}${s.credit ? ` · ${euro(s.credit)} Guthaben` : ''}`, 'wide')}
+      </div>
+
+      ${s.unknownCost ? `
+        <p class="notice">
+          ${plural(s.unknownCost, 'Kaffee', 'Kaffees')} in diesem Zeitraum ${s.unknownCost === 1 ? 'hat' : 'haben'} keine Herstellungskosten gespeichert
+          (z. B. weil ${s.unknownCost === 1 ? 'er' : 'sie'} vor dieser Funktion gebucht ${s.unknownCost === 1 ? 'wurde' : 'wurden'}). ${s.unknownCost === 1 ? 'Er zählt' : 'Sie zählen'} hier mit 0 €,
+          der Gewinn ist also zu hoch angesetzt. <a href="#/einstellungen" data-action="goto-settings">Kosten in den Einstellungen hinterlegen</a> –
+          dort kannst du sie auch für ältere Buchungen nachtragen.
+        </p>` : ''}
+
+      ${breakdownHtml('Verkauft nach Sorte', sorts, r => r.count, r => `${r.count}× · ${euro(r.revenue)}`)}
+      ${breakdownHtml('Umsatz nach Kollege', people, r => r.revenue, r => `${euro(r.revenue)} · ${plural(r.count, 'Kaffee', 'Kaffees')}`)}`;
+  }
+
+  // ----- Einstellungen -----
+  function lastExportText() {
+    let ts = 0;
+    try { ts = Number(localStorage.getItem(LAST_EXPORT_KEY)) || 0; } catch (e) { /* ignorieren */ }
+    return ts ? `Letztes Backup: ${dateFmt.format(ts)}, ${timeFmt.format(ts)} Uhr` : 'Bisher wurde noch kein Backup erstellt.';
+  }
+
+  function marginText(c) {
+    return c.cost === null ? 'Herstellungskosten noch nicht hinterlegt' : `Gewinn je Tasse (ohne Rabatt): ${signedEuro(c.price - c.cost)}`;
+  }
+
+  function viewSettings() {
+    const people = sortedPeople();
+    const coffees = state.coffees;
+    return `
+      <header class="bar">
+        <h1 class="page-title">Einstellungen</h1>
+      </header>
+
+      <section class="card">
+        <h2>Kollegen <span class="count">${people.length}</span></h2>
+        <form class="add-form" data-form="add-person" novalidate>
+          <input type="text" id="newPerson" class="grow" placeholder="Name" maxlength="${MAX_NAME}" autocomplete="off" enterkeyhint="done" aria-label="Name des neuen Kollegen">
+          ${state.groups.length ? `<span class="select grow"><select id="newPersonGroup" aria-label="Gruppe des neuen Kollegen">${groupOptions(lastAddGroup)}</select></span>` : ''}
+          <button class="btn primary" type="submit">${ICON.plus}Hinzufügen</button>
+        </form>
+        ${people.length ? `
+          <ul class="manage">${people.map(p => `
+            <li>
+              <input type="text" class="grow" data-edit="person-name" data-id="${p.id}" value="${esc(p.name)}" maxlength="${MAX_NAME}" autocomplete="off" enterkeyhint="done" aria-label="Name von ${esc(p.name)}">
+              <button class="icon-btn" data-action="person-settings" data-id="${p.id}" aria-label="Einstellungen für ${esc(p.name)}" title="Gruppe, Lieblingsgetränk, Rabatt & Notiz">${ICON.gearSmall}</button>
+              <button class="icon-btn del" data-action="del-person" data-id="${p.id}" aria-label="${esc(p.name)} löschen" title="Löschen">${ICON.trash}</button>
+            </li>`).join('')}
+          </ul>
+          <p class="hint">Zum Umbenennen in den Namen tippen. Über das Zahnrad legst du Gruppe, Lieblingsgetränk, Rabatt und Notiz fest.</p>` : ''}
+      </section>
+
+      <section class="card">
+        <h2>Gruppen <span class="count">${state.groups.length}</span></h2>
+        <form class="add-form" data-form="add-group" novalidate>
+          <input type="text" id="newGroup" class="grow" placeholder="z. B. Büro, Werkstatt, Schicht A" maxlength="${MAX_NAME}" autocomplete="off" enterkeyhint="done" aria-label="Name der neuen Gruppe">
+          <button class="btn primary" type="submit">${ICON.plus}Hinzufügen</button>
+        </form>
+        ${state.groups.length ? `
+          <ul class="manage">${[...state.groups].sort(byName).map(g => {
+            const n = state.people.filter(p => p.groupId === g.id).length;
+            return `
+            <li>
+              <input type="text" class="grow" data-edit="group-name" data-id="${g.id}" value="${esc(g.name)}" maxlength="${MAX_NAME}" autocomplete="off" enterkeyhint="done" aria-label="Name der Gruppe ${esc(g.name)}">
+              <span class="member-count" title="${plural(n, 'Person', 'Personen')}">${ICON.usersSmall}${n}</span>
+              <button class="icon-btn del" data-action="del-group" data-id="${g.id}" aria-label="Gruppe ${esc(g.name)} löschen" title="Löschen">${ICON.trash}</button>
+            </li>`;
+          }).join('')}
+          </ul>` : ''}
+        <p class="hint">Personen ordnest du über das Zahnrad einer Gruppe zu. Wer keine Gruppe hat, steht unter „${NO_GROUP_NAME}“. Beim Löschen einer Gruppe bleiben alle Personen erhalten.</p>
+      </section>
+
+      <section class="card">
+        <h2>Kaffeesorten <span class="count">${coffees.length}</span></h2>
+        ${coffees.length ? `
+          <ul class="coffee-items">${coffees.map(c => `
+            <li class="coffee-item">
+              <div class="ci-top">
+                <input type="text" data-edit="coffee-name" data-id="${c.id}" value="${esc(c.name)}" maxlength="${MAX_NAME}" autocomplete="off" enterkeyhint="done" aria-label="Name der Sorte ${esc(c.name)}">
+                <button class="icon-btn del" data-action="del-coffee" data-id="${c.id}" aria-label="${esc(c.name)} löschen" title="Löschen">${ICON.trash}</button>
+              </div>
+              <div class="ci-prices">
+                <label class="mini">Verkaufspreis
+                  <span class="money"><input type="text" data-edit="coffee-price" data-id="${c.id}" value="${plain(c.price)}" inputmode="decimal" autocomplete="off" enterkeyhint="done"><span aria-hidden="true">€</span></span>
+                </label>
+                <label class="mini">Herstellungskosten
+                  <span class="money"><input type="text" data-edit="coffee-cost" data-id="${c.id}" value="${c.cost !== null ? plain(c.cost) : ''}" placeholder="–" inputmode="decimal" autocomplete="off" enterkeyhint="done"><span aria-hidden="true">€</span></span>
+                </label>
+              </div>
+              <div class="ci-margin">${marginText(c)}</div>
+            </li>`).join('')}
+          </ul>` : '<p class="empty-note">Noch keine Sorten angelegt.</p>'}
+        <p class="hint">Name, Preis und Kosten lassen sich direkt ändern. Änderungen gelten nur für neue Buchungen – bereits gebuchte Kaffees behalten ihre damaligen Werte.</p>
+        <p class="hint">${ICON.lock} Herstellungskosten siehst nur du: hier und in der Auswertung, nie in der Buchungsansicht.</p>
+        <h3>Neue Sorte</h3>
+        <form class="add-coffee" data-form="add-coffee" novalidate>
+          <input type="text" id="newCoffeeName" class="full" placeholder="Name, z. B. Kakao" maxlength="${MAX_NAME}" autocomplete="off" aria-label="Name der neuen Sorte">
+          <label class="mini">Verkaufspreis
+            <span class="money"><input type="text" id="newCoffeePrice" inputmode="decimal" placeholder="0,00" autocomplete="off"><span aria-hidden="true">€</span></span>
+          </label>
+          <label class="mini">Herstellungskosten
+            <span class="money"><input type="text" id="newCoffeeCost" inputmode="decimal" placeholder="optional" autocomplete="off" enterkeyhint="done"><span aria-hidden="true">€</span></span>
+          </label>
+          <button class="btn primary full" type="submit">${ICON.plus}Hinzufügen</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Konto</h2>
+        <p class="hint" style="margin-top:0">Angemeldet als <strong>${esc(adminUser ? adminUser.email || adminUser.displayName || '' : '')}</strong>. Deine Daten liegen geschützt in deiner Firebase-Datenbank und sind auf allen Geräten verfügbar, auf denen du dich anmeldest.</p>
+        <div class="btn-col"><button class="btn" data-action="logout">${ICON.logout}Abmelden</button></div>
+      </section>
+
+      <section class="card">
+        <h2>Datensicherung</h2>
+        <p class="hint" style="margin-top:0">Ein Backup als Datei ist eine zusätzliche Sicherheit, z. B. bevor du größere Änderungen machst. Beim Import werden alle Daten durch das Backup ersetzt.</p>
+        <p class="hint">${lastExportText()}</p>
+        <div class="btn-col">
+          <button class="btn" data-action="export">${ICON.download}Backup exportieren</button>
+          <button class="btn" data-action="import">${ICON.upload}Backup importieren</button>
+        </div>
+        <input type="file" id="importFile" accept=".json,application/json" hidden>
+      </section>
+
+      <p class="footer-note">${people.length} Kollegen · ${bookingsText(state.entries.length)} · ${plural(state.beans.length, 'Bohne', 'Bohnen')}</p>`;
+  }
+
+  // ---------- Aktionen ----------
+  function markInvalid(input) {
+    input.classList.add('invalid');
+    input.focus();
+  }
+
+  let lastBooking = { id: null, t: 0 };
+
+  function book(coffeeId, btn) {
+    const p = personById(currentId);
+    const c = coffeeById(coffeeId);
+    if (!p || !c) return;
+    // versehentlichen Doppeltipp abfangen
+    const now = Date.now();
+    if (lastBooking.id === coffeeId && now - lastBooking.t < 300) return;
+    lastBooking = { id: coffeeId, t: now };
+
+    const entry = bookingFor(p, c, now);
+    state.entries.push(entry);
+    save();
+    updatePersonView(true);
+    btn.classList.remove('done');
+    void btn.offsetWidth;
+    btn.classList.add('done');
+    if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) { /* ignorieren */ } }
+    toast(`${c.name} hinzugefügt`, { undo: () => removeEntry(entry.id) });
+  }
+
+  function removeEntry(id) {
+    const i = state.entries.findIndex(e => e.id === id);
+    if (i < 0) return;
+    state.entries.splice(i, 1);
+    save();
+    refresh();
+  }
+
+  async function submitPayment() {
+    const p = personById(currentId);
+    const input = $('#payInput');
+    if (!p || !input) return;
+    const cents = parseAmount(input.value);
+    if (cents === null || cents <= 0) {
+      markInvalid(input);
+      toast('Bitte einen gültigen Betrag eingeben, z. B. 5,00', { error: true });
+      return;
+    }
+    if (cents >= LARGE_PAYMENT) {
+      const ok = await confirmDialog({
+        title: 'Großer Betrag',
+        html: `Wirklich eine Zahlung über <strong>${euro(cents)}</strong> für ${esc(p.name)} erfassen?`,
+        confirmText: 'Ja, erfassen',
+      });
+      if (!ok || !personById(p.id)) return;
+    }
+    const entry = { id: uid(), personId: p.id, type: 'payment', amount: cents, ts: Date.now() };
+    state.entries.push(entry);
+    save();
+    input.value = '';
+    input.blur();
+    updatePersonView(true);
+    toast(`Zahlung über ${euro(cents)} erfasst`, { undo: () => removeEntry(entry.id) });
+  }
+
+  async function deleteEntry(id) {
+    const e = state.entries.find(x => x.id === id);
+    if (!e) return;
+    const label = e.type === 'coffee' ? e.label : 'Zahlung';
+    const ok = await confirmDialog({
+      title: 'Eintrag löschen?',
+      html: `<strong>${esc(label)}</strong> über ${euro(e.amount)} vom ${dateFmt.format(e.ts)}, ${timeFmt.format(e.ts)} Uhr wird aus dem Verlauf entfernt. Der Schuldenstand wird entsprechend angepasst.`,
+      confirmText: 'Löschen',
+      danger: true,
+    });
+    if (!ok) return;
+    removeEntry(id);
+    toast('Eintrag gelöscht', {
+      undo: () => { state.entries.push(e); save(); refresh(); },
+    });
+  }
+
+  function addPerson() {
+    const input = $('#newPerson');
+    const name = cleanName(input.value);
+    if (!name) {
+      markInvalid(input);
+      toast('Bitte einen Namen eingeben.', { error: true });
+      return;
+    }
+    if (state.people.some(p => sameName(p.name, name))) {
+      markInvalid(input);
+      toast(`„${name}“ gibt es schon.`, { error: true });
+      return;
+    }
+    const groupSelect = $('#newPersonGroup');
+    lastAddGroup = groupSelect && groupById(groupSelect.value) ? groupSelect.value : null;
+    state.people.push({ id: uid(), name, discount: 0, note: '', favoriteCoffeeId: null, groupId: lastAddGroup });
+    save();
+    render();
+    $('#newPerson').focus();
+    toast(`${name} hinzugefügt`);
+  }
+
+  function savePersonSettings() {
+    const p = personById(currentId);
+    if (!p) return;
+    const nameInput = $('#psName');
+    const discountInput = $('#psDiscount');
+    const name = cleanName(nameInput.value);
+    if (!name) {
+      markInvalid(nameInput);
+      toast('Bitte einen Namen eingeben.', { error: true });
+      return;
+    }
+    if (state.people.some(x => x.id !== p.id && sameName(x.name, name))) {
+      markInvalid(nameInput);
+      toast(`„${name}“ gibt es schon.`, { error: true });
+      return;
+    }
+    const discount = parsePercent(discountInput.value);
+    if (discount === null) {
+      markInvalid(discountInput);
+      toast('Rabatt bitte zwischen 0 und 100 % angeben.', { error: true });
+      return;
+    }
+    p.name = name;
+    p.discount = discount;
+    p.note = cleanText($('#psNote').value, MAX_NOTE);
+    const groupSelect = $('#psGroup');
+    if (groupSelect) p.groupId = groupById(groupSelect.value) ? groupSelect.value : null;
+    const favorite = $('#psFav').value;
+    p.favoriteCoffeeId = coffeeById(favorite) ? favorite : null;
+    save();
+    toast(`${name} gespeichert`);
+    goBack('#/p/' + encodeURIComponent(p.id));
+  }
+
+  async function deletePerson(id) {
+    const p = personById(id);
+    if (!p) return;
+    const b = balanceOf(id);
+    const removed = entriesOf(id);
+    const n = removed.length;
+    let html;
+    if (b > 0) {
+      html = `<strong class="debt">Achtung: ${esc(p.name)} schuldet dir noch ${euro(b)}!</strong>` +
+        `Beim Löschen gehen der offene Betrag und ${n === 1 ? 'die Buchung' : `alle ${n} Buchungen`} verloren.`;
+    } else if (b < 0) {
+      html = `<strong class="credit">${esc(p.name)} hat noch ${euro(-b)} Guthaben.</strong>` +
+        `Beim Löschen gehen das Guthaben und ${n === 1 ? 'die Buchung' : `alle ${n} Buchungen`} verloren.`;
+    } else {
+      html = `${esc(p.name)} wird mit ${n ? (n === 1 ? 'der einen Buchung' : `allen ${n} Buchungen`) : 'dem leeren Verlauf'} gelöscht. Der Saldo ist ausgeglichen.`;
+    }
+    const openOrders = state.orders.filter(o => o.personId === id);
+    if (openOrders.length) html += `<br><br>${plural(openOrders.length, 'offene Bestellung wird', 'offene Bestellungen werden')} storniert.`;
+    const ok = await confirmDialog({
+      title: `${p.name} löschen?`,
+      html,
+      confirmText: b !== 0 ? 'Trotzdem löschen' : 'Löschen',
+      danger: true,
+    });
+    if (!ok) return;
+    const removedOrders = state.orders.filter(o => o.personId === id);
+    state.people = state.people.filter(x => x.id !== id);
+    state.entries = state.entries.filter(e => e.personId !== id);
+    save(removedOrders.map(o => ['delete', orderRef(o.id)]));
+    refresh();
+    toast(`${p.name} gelöscht`, {
+      undo: () => {
+        state.people.push(p);
+        state.entries.push(...removed);
+        save(removedOrders.map(o => ['set', orderRef(o.id), restorable(o)]));
+        refresh();
+      },
+    });
+  }
+
+  function addCoffee() {
+    const nameInput = $('#newCoffeeName');
+    const priceInput = $('#newCoffeePrice');
+    const costInput = $('#newCoffeeCost');
+    const name = cleanName(nameInput.value);
+    const price = parseAmount(priceInput.value);
+    const cost = costInput.value.trim() ? parseAmount(costInput.value) : null;
+    if (!name) {
+      markInvalid(nameInput);
+      toast('Bitte einen Namen für die Sorte eingeben.', { error: true });
+      return;
+    }
+    if (state.coffees.some(c => sameName(c.name, name))) {
+      markInvalid(nameInput);
+      toast(`„${name}“ gibt es schon.`, { error: true });
+      return;
+    }
+    if (price === null) {
+      markInvalid(priceInput);
+      toast('Bitte einen gültigen Preis eingeben, z. B. 0,80', { error: true });
+      return;
+    }
+    if (cost === null && costInput.value.trim()) {
+      markInvalid(costInput);
+      toast('Ungültige Herstellungskosten – bitte z. B. 0,25 eingeben.', { error: true });
+      return;
+    }
+    state.coffees.push({ id: uid(), name, price, cost });
+    save();
+    render();
+    toast(`${name} (${euro(price)}) hinzugefügt`);
+  }
+
+  async function deleteCoffee(id) {
+    const c = coffeeById(id);
+    if (!c) return;
+    const openOrders = state.orders.filter(o => o.coffeeId === id).length;
+    const fans = state.people.filter(p => p.favoriteCoffeeId === id);
+    const ok = await confirmDialog({
+      title: `„${c.name}“ löschen?`,
+      html: 'Die Sorte verschwindet aus der Auswahl. Bereits gebuchte Kaffees dieser Sorte bleiben im Verlauf mit ihrem damaligen Preis erhalten.' +
+        (openOrders ? `<br><br>${plural(openOrders, 'offene Bestellung wird', 'offene Bestellungen werden')} storniert.` : '') +
+        (fans.length ? `<br><br>Bei ${plural(fans.length, 'Person', 'Personen')} wird das Lieblingsgetränk entfernt.` : ''),
+      confirmText: 'Löschen',
+      danger: true,
+    });
+    if (!ok) return;
+    const idx = state.coffees.indexOf(c);
+    const removedOrders = state.orders.filter(o => o.coffeeId === id);
+    state.coffees.splice(idx, 1);
+    fans.forEach(p => { p.favoriteCoffeeId = null; });
+    save(removedOrders.map(o => ['delete', orderRef(o.id)]));
+    refresh();
+    toast(`${c.name} gelöscht`, {
+      undo: () => {
+        state.coffees.splice(Math.min(idx, state.coffees.length), 0, c);
+        fans.forEach(p => { if (p.favoriteCoffeeId === null) p.favoriteCoffeeId = c.id; });
+        save(removedOrders.map(o => ['set', orderRef(o.id), restorable(o)]));
+        refresh();
+      },
+    });
+  }
+
+  // Buchungen von vor dieser Funktion haben keine Herstellungskosten; auf Wunsch nachtragen
+  async function offerCostBackfill(c) {
+    const cost = c.cost;
+    const missing = state.entries.filter(e => e.type === 'coffee' && e.coffeeId === c.id && e.cost === null);
+    if (cost === null || !missing.length) return;
+    const ok = await confirmDialog({
+      title: 'Ältere Buchungen ergänzen?',
+      html: `Für <strong>${plural(missing.length, 'gebuchten Kaffee', 'gebuchte Kaffees')}</strong> „${esc(c.name)}“ sind noch keine Herstellungskosten gespeichert. Sollen <strong>${euro(cost)}</strong> auch dafür übernommen werden?<br><br>Das betrifft nur die Auswertung – Schuldenstände ändern sich nicht.`,
+      confirmText: 'Übernehmen',
+    });
+    if (!ok) return;
+    for (const e of missing) if (e.cost === null) e.cost = cost;
+    save();
+    toast(`Kosten für ${plural(missing.length, 'Buchung', 'Buchungen')} nachgetragen`);
+  }
+
+  // Direktes Bearbeiten in den Einstellungen (wird beim Verlassen des Feldes gespeichert)
+  function onEdit(t) {
+    const id = t.dataset.id;
+    const kind = t.dataset.edit;
+    if (kind === 'person-name' || kind === 'coffee-name' || kind === 'group-name') {
+      const isPerson = kind === 'person-name';
+      const isGroup = kind === 'group-name';
+      const list = isPerson ? state.people : isGroup ? state.groups : state.coffees;
+      const item = list.find(x => x.id === id);
+      if (!item) return;
+      const name = cleanName(t.value);
+      if (!name) {
+        t.value = item.name;
+        toast('Der Name darf nicht leer sein.', { error: true });
+        return;
+      }
+      if (name === item.name) { t.value = name; return; }
+      if (list.some(x => x.id !== id && sameName(x.name, name)) || (isGroup && sameName(name, NO_GROUP_NAME))) {
+        t.value = item.name;
+        toast(`„${name}“ gibt es schon.`, { error: true });
+        return;
+      }
+      item.name = name;
+      t.value = name;
+      save();
+      toast(isPerson ? 'Name geändert' : isGroup ? `Gruppe umbenannt in „${name}“` : `Sorte umbenannt in „${name}“`);
+      return;
+    }
+    const c = coffeeById(id);
+    if (!c) return;
+    const marginEl = t.closest('.coffee-item').querySelector('.ci-margin');
+    if (kind === 'coffee-price') {
+      const cents = parseAmount(t.value);
+      if (cents === null) {
+        t.value = plain(c.price);
+        toast('Ungültiger Preis – bitte z. B. 0,80 eingeben.', { error: true });
+        return;
+      }
+      t.value = plain(cents);
+      if (cents === c.price) return;
+      c.price = cents;
+      save();
+      marginEl.textContent = marginText(c);
+      toast(`Neuer Preis für ${c.name}: ${euro(cents)}`);
+    } else if (kind === 'coffee-cost') {
+      const raw = t.value.trim();
+      const cents = raw ? parseAmount(raw) : null;
+      if (raw && cents === null) {
+        t.value = c.cost !== null ? plain(c.cost) : '';
+        toast('Ungültige Kosten – bitte z. B. 0,25 eingeben.', { error: true });
+        return;
+      }
+      t.value = cents !== null ? plain(cents) : '';
+      if (cents === c.cost) return;
+      c.cost = cents;
+      save();
+      marginEl.textContent = marginText(c);
+      toast(cents === null ? `Herstellungskosten für ${c.name} entfernt` : `Herstellungskosten für ${c.name}: ${euro(cents)}`);
+      offerCostBackfill(c);
+    }
+  }
+
+  function saveBean() {
+    const nameInput = $('#bName');
+    const priceInput = $('#bPrice');
+    const sizeInput = $('#bSize');
+    const name = cleanName(nameInput.value);
+    if (!name) {
+      markInvalid(nameInput);
+      toast('Bitte einen Namen für die Bohne eingeben.', { error: true });
+      return;
+    }
+    let packPrice = null;
+    if (priceInput.value.trim()) {
+      packPrice = parseAmount(priceInput.value);
+      if (packPrice === null) {
+        markInvalid(priceInput);
+        toast('Ungültiger Kaufpreis – bitte z. B. 12,90 eingeben.', { error: true });
+        return;
+      }
+    }
+    const packSize = parseGrams(sizeInput.value);
+    if (Number.isNaN(packSize)) {
+      markInvalid(sizeInput);
+      toast('Packungsgröße bitte in Gramm angeben, z. B. 1000.', { error: true });
+      return;
+    }
+    const data = {
+      name,
+      roaster: cleanText($('#bRoaster').value, MAX_SHORT),
+      grind: cleanText($('#bGrind').value, MAX_NAME),
+      notes: cleanText($('#bNotes').value, MAX_NOTE),
+      packPrice,
+      packSize,
+      active: $('#bActive').checked,
+    };
+    if (data.active) state.beans.forEach(b => { b.active = false; });
+    if (currentId === 'neu') state.beans.push({ id: uid(), ...data });
+    else Object.assign(beanById(currentId), data);
+    save();
+    toast(`${name} gespeichert`);
+    goBack('#/bohnen');
+  }
+
+  function activateBean(id) {
+    const bean = beanById(id);
+    if (!bean) return;
+    const previous = state.beans.find(b => b.active);
+    state.beans.forEach(b => { b.active = b === bean; });
+    save();
+    render();
+    window.scrollTo(0, 0);
+    toast(`${bean.name} in Benutzung${bean.grind ? ` – Mahlgrad ${bean.grind}` : ''}`, {
+      undo: () => {
+        state.beans.forEach(b => { b.active = b === previous; });
+        save();
+        refresh();
+      },
+    });
+  }
+
+  async function deleteBean(id) {
+    const bean = beanById(id);
+    if (!bean) return;
+    const ok = await confirmDialog({
+      title: `„${bean.name}“ löschen?`,
+      html: 'Die Bohne wird mit allen Notizen aus deiner Liste entfernt.',
+      confirmText: 'Löschen',
+      danger: true,
+    });
+    if (!ok) return;
+    const idx = state.beans.indexOf(bean);
+    state.beans.splice(idx, 1);
+    save();
+    const undo = () => {
+      if (bean.active) state.beans.forEach(b => { b.active = false; });
+      state.beans.splice(Math.min(idx, state.beans.length), 0, bean);
+      save();
+      refresh();
+    };
+    if (currentView === 'bean') goBack('#/bohnen');
+    else refresh();
+    toast(`${bean.name} gelöscht`, { undo });
+  }
+
+  // ---------- Gruppen ----------
+  function addGroup() {
+    const input = $('#newGroup');
+    const name = cleanName(input.value);
+    if (!name) {
+      markInvalid(input);
+      toast('Bitte einen Namen für die Gruppe eingeben.', { error: true });
+      return;
+    }
+    if (sameName(name, NO_GROUP_NAME) || state.groups.some(g => sameName(g.name, name))) {
+      markInvalid(input);
+      toast(`„${name}“ gibt es schon.`, { error: true });
+      return;
+    }
+    state.groups.push({ id: uid(), name });
+    save();
+    render();
+    $('#newGroup').focus();
+    toast(`Gruppe „${name}“ angelegt`);
+  }
+
+  async function deleteGroup(id) {
+    const g = groupById(id);
+    if (!g) return;
+    const members = state.people.filter(p => p.groupId === id);
+    const ok = await confirmDialog({
+      title: `Gruppe „${g.name}“ löschen?`,
+      html: members.length
+        ? `${plural(members.length, 'Person wird', 'Personen werden')} nach „${NO_GROUP_NAME}“ verschoben. Es wird niemand gelöscht.`
+        : 'Die Gruppe ist leer.',
+      confirmText: 'Gruppe löschen',
+      danger: true,
+    });
+    if (!ok) return;
+    const idx = state.groups.indexOf(g);
+    state.groups.splice(idx, 1);
+    members.forEach(p => { p.groupId = null; });
+    save();
+    refresh();
+    toast(`Gruppe „${g.name}“ gelöscht`, {
+      undo: () => {
+        state.groups.splice(Math.min(idx, state.groups.length), 0, g);
+        members.forEach(p => { if (p.groupId === null) p.groupId = g.id; });
+        save();
+        refresh();
+      },
+    });
+  }
+
+  function toggleGroup(key, btn) {
+    const section = btn.closest('.grp');
+    const isCollapsed = !section.classList.contains('collapsed');
+    section.classList.toggle('collapsed', isCollapsed);
+    btn.setAttribute('aria-expanded', String(!isCollapsed));
+    if (isCollapsed) collapsed.add(key); else collapsed.delete(key);
+    savePref(COLLAPSED_KEY, JSON.stringify([...collapsed]));
+  }
+
+  function setAllGroups(collapse) {
+    collapsed = collapse ? new Set(groupSections(state.people).map(sec => sec.key)) : new Set();
+    savePref(COLLAPSED_KEY, JSON.stringify([...collapsed]));
+    render();
+  }
+
+  // ---------- Bestellungen ----------
+  // Die Warteschlange liegt in Firestore. Jede Änderung wird geschrieben und kommt über den
+  // Echtzeit-Listener sofort zurück (auch offline). Reihenfolge: Feld "pos", sonst Eingangszeit.
+  let ordersUnsub = null;
+  let pendingFocus = null;
+  let ordersDirty = false;
+
+  const dateKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const todayKey = () => dateKey(new Date());
+  const orderKey = o => (o.pos !== null ? o.pos : o.erstellt);
+  const compareOrders = (a, b) => orderKey(a) - orderKey(b) || a.erstellt - b.erstellt || (a.id < b.id ? -1 : 1);
+  const vibrate = () => { if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) { /* ignorieren */ } } };
+
+  function orderFromDoc(snap) {
+    const x = snap.data({ serverTimestamps: 'estimate' });
+    return {
+      id: snap.id,
+      personId: x.personId,
+      coffeeId: x.sorteId,
+      pauseId: x.pauseId || null,
+      datum: x.datum,
+      uid: x.uid,
+      quelle: x.quelle,
+      erstellt: x.erstellt && typeof x.erstellt.toMillis === 'function' ? x.erstellt.toMillis() : Date.now(),
+      pos: typeof x.pos === 'number' ? x.pos : null,
+    };
+  }
+
+  // Für "Rückgängig": die Bestellung so wiederherstellen, wie sie war
+  const restorable = o => ({
+    personId: o.personId, sorteId: o.coffeeId, pauseId: o.pauseId, datum: o.datum, uid: o.uid,
+    status: 'offen', quelle: o.quelle, erstellt: Timestamp.fromMillis(o.erstellt),
+    ...(o.pos !== null ? { pos: o.pos } : {}),
+  });
+
+  function startOrders() {
+    if (ordersUnsub) ordersUnsub();
+    state.orders = [];
+    ordersUnsub = onSnapshot(query(orderCollection(), where('status', '==', 'offen')), snap => {
+      state.orders = snap.docs.map(orderFromDoc).sort(compareOrders);
+      ordersChanged();
+    }, err => console.error('Bestellungen', err));
+  }
+
+  function ordersChanged() {
+    updateOrderBadge();
+    if (!ready) return;
+    if (drag) { ordersDirty = true; return; }
+    if (currentView === 'orders' || currentView === 'orderPick') render();
+    applyPendingFocus();
+  }
+
+  function applyPendingFocus() {
+    if (!pendingFocus || currentView !== 'orders') return;
+    const item = app.querySelector(`.q-item[data-id="${pendingFocus.id}"]`);
+    if (item) {
+      item.classList.add('moved');
+      const same = pendingFocus.action && item.querySelector(`[data-action="${pendingFocus.action}"]`);
+      if (same) (!same.disabled ? same : item.querySelector('[data-action="order-done"]')).focus({ preventScroll: true });
+    }
+    pendingFocus = null;
+  }
+
+  // Neue Reihenfolge speichern: nur Einträge, deren Position sich ändert
+  function reposition(list) {
+    const writes = [];
+    list.forEach((o, i) => { if (o.pos !== i) writes.push(['update', orderRef(o.id), { pos: i }]); });
+    commit(writes);
+  }
+
+  function placeOrder(more) {
+    const p = personById(currentId);
+    const c = pick && coffeeById(pick.coffeeId);
+    if (!p || !c) {
+      toast('Bitte zuerst ein Getränk auswählen.', { error: true });
+      return;
+    }
+    const now = Date.now();
+    const refs = [];
+    for (let i = 0; i < pick.qty; i++) refs.push(doc(orderCollection()));
+    commit(refs.map((ref, i) => ['set', ref, {
+      personId: p.id, sorteId: c.id, pauseId: null, datum: todayKey(), uid: adminUser.uid,
+      status: 'offen', quelle: 'admin', erstellt: serverTimestamp(), pos: now + i,
+    }]));
+    const undo = () => commit(refs.map(ref => ['delete', ref]));
+    const msg = `${refs.length > 1 ? refs.length + '× ' : ''}${c.name} für ${p.name} vorgemerkt`;
+    if (more) {
+      pick.qty = 1;
+      updatePickUi();
+    } else {
+      goBack('#/bestellungen');
+    }
+    toast(msg, { undo });
+  }
+
+  function moveOrder(id, dir) {
+    const list = state.orders.slice();
+    const i = list.findIndex(o => o.id === id);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= list.length) return;
+    [list[i], list[j]] = [list[j], list[i]];
+    pendingFocus = { id, action: dir < 0 ? 'order-up' : 'order-down' };
+    reposition(list);
+  }
+
+  // "Fertig": wie ein Tipp in der Personenansicht – mit Rabatt, Preis und Kosten von jetzt
+  function completeOrder(id) {
+    const order = state.orders.find(o => o.id === id);
+    if (!order) return;
+    const p = personById(order.personId);
+    const c = coffeeById(order.coffeeId);
+    if (!p || !c) {
+      toast('Person oder Sorte gibt es nicht mehr – bitte stornieren.', { error: true });
+      return;
+    }
+    const entry = bookingFor(p, c, Date.now());
+    state.entries.push(entry);
+    save([['update', orderRef(id), { status: 'fertig', fertigAm: serverTimestamp() }]]);
+    vibrate();
+    toast(`${c.name} für ${p.name} verbucht`, {
+      undo: () => {
+        state.entries = state.entries.filter(e => e.id !== entry.id);
+        save([['update', orderRef(id), { status: 'offen', fertigAm: deleteField() }]]);
+        refresh();
+      },
+    });
+  }
+
+  function cancelOrder(id) {
+    const order = state.orders.find(o => o.id === id);
+    if (!order) return;
+    const p = personById(order.personId);
+    const c = coffeeById(order.coffeeId);
+    commit([['delete', orderRef(id)]]);
+    toast(`Storniert${p && c ? `: ${c.name} für ${p.name}` : ''}`, {
+      undo: () => commit([['set', orderRef(id), restorable(order)]]),
+    });
+  }
+
+  async function completeAll() {
+    const valid = o => personById(o.personId) && coffeeById(o.coffeeId);
+    const orders = state.orders.filter(valid);
+    if (!orders.length) return;
+    const persons = new Set(orders.map(o => o.personId)).size;
+    const total = orders.reduce((sum, o) => sum + discountedPrice(coffeeById(o.coffeeId).price, personById(o.personId).discount), 0);
+    const ok = await confirmDialog({
+      title: 'Alle Bestellungen verbuchen?',
+      html: `<strong>${plural(orders.length, 'Getränk', 'Getränke')}</strong> für ${plural(persons, 'Person', 'Personen')} werden angerechnet, zusammen <strong>${euro(total)}</strong>.<br><br>${orderSummary(orders)}`,
+      confirmText: 'Alle verbuchen',
+    });
+    if (!ok) return;
+    const done = state.orders.filter(valid);
+    const now = Date.now();
+    const entries = done.map(o => bookingFor(personById(o.personId), coffeeById(o.coffeeId), now));
+    state.entries.push(...entries);
+    save(done.map(o => ['update', orderRef(o.id), { status: 'fertig', fertigAm: serverTimestamp() }]));
+    toast(`${plural(entries.length, 'Getränk', 'Getränke')} verbucht`, {
+      undo: () => {
+        const entryIds = new Set(entries.map(e => e.id));
+        state.entries = state.entries.filter(e => !entryIds.has(e.id));
+        save(done.map(o => ['update', orderRef(o.id), { status: 'offen', fertigAm: deleteField() }]));
+        refresh();
+      },
+    });
+  }
+
+  // Gleiche Getränke hintereinander; die Sorte der frühesten Bestellung kommt zuerst
+  function sortOrdersByDrink() {
+    const before = state.orders.slice();
+    const first = new Map();
+    before.forEach((o, i) => { if (!first.has(o.coffeeId)) first.set(o.coffeeId, i); });
+    const sorted = before
+      .map((o, i) => ({ o, i }))
+      .sort((a, b) => first.get(a.o.coffeeId) - first.get(b.o.coffeeId) || a.i - b.i)
+      .map(x => x.o);
+    if (sorted.every((o, i) => o === before[i])) {
+      toast('Gleiche Getränke stehen schon hintereinander.');
+      return;
+    }
+    reposition(sorted);
+    toast('Nach Getränk sortiert', {
+      undo: () => {
+        const pos = new Map(before.map((o, i) => [o.id, i]));
+        const at = o => (pos.has(o.id) ? pos.get(o.id) : 1e9 + orderKey(o));
+        reposition(state.orders.slice().sort((a, b) => at(a) - at(b)));
+      },
+    });
+  }
+
+  // Ziehen am Griff (Maus, Finger, Stift): Eintrag folgt dem Zeiger, die anderen rücken nach
+  let drag = null;
+
+  function startDrag(e, handle) {
+    const item = handle.closest('.q-item');
+    const list = item.parentElement;
+    e.preventDefault();
+    try { handle.setPointerCapture(e.pointerId); } catch (err) { /* ignorieren */ }
+    drag = { item, list, pointerId: e.pointerId, y: e.clientY, offsetY: e.clientY - item.getBoundingClientRect().top };
+    item.classList.add('dragging');
+    document.body.classList.add('drag-active');
+    requestAnimationFrame(autoScroll);
+  }
+
+  function positionDrag() {
+    const { item, list } = drag;
+    const listTop = list.getBoundingClientRect().top;
+    const top = drag.y - drag.offsetY;
+    const center = top + item.offsetHeight / 2;
+    const middle = el => listTop + el.offsetTop + el.offsetHeight / 2;
+    let moved = false;
+    let sibling;
+    while ((sibling = item.previousElementSibling) && center < middle(sibling)) { list.insertBefore(item, sibling); moved = true; }
+    while ((sibling = item.nextElementSibling) && center > middle(sibling)) { list.insertBefore(sibling, item); moved = true; }
+    item.style.transform = `translateY(${top - (listTop + item.offsetTop)}px)`;
+    if (moved) list.querySelectorAll('.q-num').forEach((num, i) => { num.textContent = `${i + 1}.`; });
+  }
+
+  function autoScroll() {
+    if (!drag) return;
+    const topEdge = 100;
+    const bottomEdge = window.innerHeight - 150; // Navigationsleiste freihalten
+    let dy = 0;
+    if (drag.y < topEdge) dy = -Math.ceil((topEdge - drag.y) / 5);
+    else if (drag.y > bottomEdge) dy = Math.ceil((drag.y - bottomEdge) / 5);
+    if (dy) {
+      window.scrollBy(0, dy);
+      positionDrag();
+    }
+    requestAnimationFrame(autoScroll);
+  }
+
+  function endDrag() {
+    const { item, list } = drag;
+    drag = null;
+    item.style.transform = '';
+    item.classList.remove('dragging');
+    document.body.classList.remove('drag-active');
+    const ids = [...list.children].map(li => li.dataset.id);
+    const byId = new Map(state.orders.map(o => [o.id, o]));
+    const next = ids.map(id => byId.get(id)).filter(Boolean)
+      .concat(state.orders.filter(o => !ids.includes(o.id)));
+    const changed = next.some((o, i) => o !== state.orders[i]);
+    if (changed) {
+      pendingFocus = { id: item.dataset.id, action: null };
+      reposition(next);
+    }
+    if (!changed || ordersDirty) {
+      ordersDirty = false;
+      render();
+    }
+  }
+
+  function exportData() {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    const data = {
+      app: 'Kaffeekasse', exportiertAm: now.toISOString(), ...stammOf(state), entries: state.entries,
+      orders: state.orders.map(o => ({ id: o.id, personId: o.personId, coffeeId: o.coffeeId, createdAt: o.erstellt })),
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `kaffeekasse-backup-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    try { localStorage.setItem(LAST_EXPORT_KEY, String(now.getTime())); } catch (e) { /* ignorieren */ }
+    if (currentView === 'settings') render();
+    toast('Backup-Datei wird gespeichert');
+  }
+
+  async function readBackupFile(input) {
+    const file = input.files && input.files[0];
+    input.value = '';
+    if (!file) return null;
+    let data = null;
+    try { data = normalize(JSON.parse(await file.text())); } catch (e) { data = null; }
+    if (!data) toast('Diese Datei ist kein gültiges Kaffeekasse-Backup.', { error: true });
+    return data;
+  }
+
+  const backupSummary = data => `<strong>${data.people.length} Kollegen</strong>, <strong>${data.coffees.length} Kaffeesorten</strong>, ` +
+    `<strong>${bookingsText(data.entries.length)}</strong>, <strong>${plural(data.beans.length, 'Bohne', 'Bohnen')}</strong>, ` +
+    `<strong>${plural(data.groups.length, 'Gruppe', 'Gruppen')}</strong> und <strong>${plural(data.orders.length, 'offene Bestellung', 'offene Bestellungen')}</strong>`;
+
+  async function importData(input) {
+    const data = await readBackupFile(input);
+    if (!data) return;
+    const ok = await confirmDialog({
+      title: 'Backup importieren?',
+      html: `Das Backup enthält ${backupSummary(data)}.<br><br>Alle aktuellen Daten werden dadurch ersetzt.`,
+      confirmText: 'Importieren',
+      danger: true,
+    });
+    if (!ok) return;
+    const replaced = state.orders.map(o => ['delete', orderRef(o.id)]);
+    data.settings.teamCode = state.settings.teamCode; // der Team-Code bleibt
+    state = { ...data, orders: state.orders };
+    save(replaced.concat(importedOrderWrites(data.orders)));
+    render();
+    toast('Backup importiert');
+  }
+
+  // Bestellungen aus einem Backup wieder in die Warteschlange stellen
+  function importedOrderWrites(orders) {
+    return orders
+      .filter(o => personById(o.personId) && coffeeById(o.coffeeId))
+      .map((o, i) => ['set', doc(orderCollection(), o.id), {
+        personId: o.personId, sorteId: o.coffeeId, pauseId: null, datum: todayKey(), uid: adminUser.uid,
+        status: 'offen', quelle: 'admin', erstellt: serverTimestamp(), pos: i,
+      }]);
+  }
+
+  // ---------- Anmeldung, Laden, erster Start ----------
+  const gate = $('#gate');
+  let unsubscribers = [];
+  let loadingHint = 0;
+
+  function showGate(html) {
+    document.body.classList.add('gated');
+    gate.hidden = false;
+    gate.innerHTML = `<div class="gate-card"><div class="gate-logo">${ICON.cupBig}</div>${html}</div>`;
+    window.scrollTo(0, 0);
+  }
+
+  function showApp() {
+    clearTimeout(loadingHint);
+    gate.hidden = true;
+    gate.innerHTML = '';
+    document.body.classList.remove('gated');
+    lastHash = null;
+    onRoute();
+  }
+
+  function stopSync() {
+    unsubscribers.forEach(stop => stop());
+    unsubscribers = [];
+    if (ordersUnsub) ordersUnsub();
+    ordersUnsub = null;
+    ready = false;
+    synced.stamm = null;
+    synced.buckets = new Map();
+  }
+
+  function startAuth() {
+    showGate('<p class="gate-text">Kaffeekasse wird geladen …</p>');
+    getRedirectResult(auth).catch(loginFailed);
+    onAuthStateChanged(auth, user => {
+      stopSync();
+      adminUser = user && !user.isAnonymous ? user : null;
+      if (adminUser) startSync();
+      else showLogin();
+    });
+  }
+
+  function showLogin(message = '') {
+    showGate(`
+      <h1>Kaffeekasse</h1>
+      <p class="gate-text">Melde dich mit deinem Google-Konto an, um deine Kaffeekasse zu öffnen.</p>
+      <button class="btn primary block" data-gate="login">${ICON.login}Mit Google anmelden</button>
+      ${message ? `<p class="gate-error">${esc(message)}</p>` : ''}`);
+  }
+
+  async function signIn() {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      if (err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment') {
+        signInWithRedirect(auth, provider).catch(loginFailed);
+      } else if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+        loginFailed(err);
+      }
+    }
+  }
+
+  function loginFailed(err) {
+    console.error(err);
+    const messages = {
+      'auth/unauthorized-domain': 'Diese Adresse ist in Firebase nicht freigegeben (Authentication → Einstellungen → Autorisierte Domains).',
+      'auth/network-request-failed': 'Keine Internetverbindung.',
+    };
+    showLogin(messages[err.code] || `Anmeldung fehlgeschlagen (${err.code || err.message}).`);
+  }
+
+  function startSync() {
+    showGate('<p class="gate-text">Daten werden geladen …</p>');
+    loadingHint = setTimeout(() => {
+      if (!ready && !gate.hidden && gate.querySelector('[data-gate]') === null) {
+        showGate('<p class="gate-text">Daten werden geladen …</p><p class="gate-text">Keine Verbindung? Beim allerersten Öffnen auf einem Gerät braucht die Kaffeekasse Internet.</p><button class="btn block" data-gate="reload">Erneut versuchen</button>');
+      }
+    }, 10000);
+    let stammSnap = null;
+    let bucketsLoaded = false;
+    const proceed = () => {
+      if (ready || !stammSnap || !bucketsLoaded) return;
+      if (stammSnap.exists()) begin(stammSnap.get('daten'));
+      else if (!stammSnap.metadata.fromCache) showWelcome(); // fehlt sie nur im Cache, sind wir offline
+    };
+    unsubscribers.push(onSnapshot(stammRef(), snap => {
+      if (ready) remoteStamm(snap);
+      else { stammSnap = snap; proceed(); }
+    }, syncFailed));
+    unsubscribers.push(onSnapshot(collection(db, 'buchungen'), snap => {
+      let changed = false;
+      for (const change of snap.docChanges()) {
+        if (change.type === 'removed') {
+          changed = synced.buckets.delete(change.doc.id) || changed;
+          continue;
+        }
+        const json = change.doc.get('daten');
+        if (synced.buckets.get(change.doc.id) !== json) {
+          synced.buckets.set(change.doc.id, json);
+          changed = true;
+        }
+      }
+      if (!ready) {
+        bucketsLoaded = true;
+        proceed();
+      } else if (changed) {
+        state.entries = normalize({ ...stammOf(state), entries: entriesFromBuckets() }, true).entries;
+        refresh();
+      }
+    }, syncFailed));
+  }
+
+  function syncFailed(err) {
+    if (err.code === 'permission-denied') console.info('Kein Zugriff auf die Daten (noch nicht freigeschaltet)');
+    else console.error(err);
+    stopSync();
+    if (err.code === 'permission-denied') showNotAdmin();
+    else showGate(`<p class="gate-error">Die Daten konnten nicht geladen werden (${esc(err.code || err.message)}).</p><button class="btn primary block" data-gate="reload">Erneut versuchen</button>`);
+  }
+
+  function showNotAdmin() {
+    showGate(`
+      <h1>Noch nicht freigeschaltet</h1>
+      <p class="gate-text">Angemeldet als <strong>${esc(adminUser.email || adminUser.displayName || 'Google-Konto')}</strong>. Dieses Konto ist in den Firestore-Regeln noch nicht als Inhaber eingetragen.</p>
+      <div class="uid-box">
+        <span class="uid-lbl">Deine Benutzer-ID</span>
+        <code id="uidText">${esc(adminUser.uid)}</code>
+        <button class="btn small" data-gate="copy-uid">${ICON.copy}Kopieren</button>
+      </div>
+      <ol class="gate-steps">
+        <li>Firebase-Konsole öffnen → <strong>Firestore Database</strong> → Reiter <strong>Regeln</strong></li>
+        <li><code>HIER-DEINE-BENUTZER-ID</code> durch deine Benutzer-ID ersetzen (die Anführungszeichen bleiben)</li>
+        <li><strong>Veröffentlichen</strong> tippen und eine Minute warten</li>
+      </ol>
+      <button class="btn primary block" data-gate="reload">Erneut prüfen</button>
+      <button class="btn ghost block" data-gate="logout">Mit anderem Konto anmelden</button>`);
+  }
+
+  function legacyData() {
+    try { return normalize(JSON.parse(localStorage.getItem(LEGACY_KEY))); } catch (e) { return null; }
+  }
+
+  function showWelcome() {
+    clearTimeout(loadingHint);
+    const legacy = legacyData();
+    showGate(`
+      <h1>Willkommen!</h1>
+      <p class="gate-text">Deine Kaffeekasse in der Cloud ist noch leer. So übernimmst du deine bisherigen Daten:</p>
+      <ol class="gate-steps">
+        <li>In der <strong>bisherigen</strong> App: <strong>Einstellungen → Datensicherung → Backup exportieren</strong></li>
+        <li>Hier <strong>Backup importieren</strong> tippen und die Datei <code>kaffeekasse-backup-….json</code> auswählen</li>
+      </ol>
+      <button class="btn primary block" data-gate="import">${ICON.upload}Backup importieren</button>
+      <input type="file" id="gateFile" accept=".json,application/json" hidden>
+      ${legacy ? `<button class="btn block" data-gate="legacy">Daten aus diesem Browser übernehmen (${legacy.people.length} Kollegen, ${bookingsText(legacy.entries.length)})</button>` : ''}
+      <button class="btn ghost block" data-gate="fresh">Ohne alte Daten neu beginnen</button>`);
+  }
+
+  // Erster Start: Daten (oder leere Kasse) in die Cloud schreiben
+  function firstStart(data) {
+    const start = data || defaultState();
+    if (!start.settings.teamCode) start.settings.teamCode = newTeamCode();
+    state = { ...start, orders: [] };
+    ready = true;
+    save([['set', teamRef(state.settings.teamCode), { erstellt: serverTimestamp() }], ...importedOrderWrites(start.orders)]);
+    startOrders();
+    showApp();
+  }
+
+  function begin(daten) {
+    let loaded = null;
+    try { loaded = normalize({ ...JSON.parse(daten), entries: entriesFromBuckets() }, true); } catch (e) { loaded = null; }
+    if (!loaded) {
+      showGate('<p class="gate-error">Die gespeicherten Daten sind nicht lesbar. Bitte ein Backup importieren.</p><button class="btn block" data-gate="reload">Erneut versuchen</button>');
+      return;
+    }
+    synced.stamm = daten;
+    state = { ...loaded, orders: [] };
+    ready = true;
+    const extra = [];
+    if (!state.settings.teamCode) {
+      state.settings.teamCode = newTeamCode();
+      extra.push(['set', teamRef(state.settings.teamCode), { erstellt: serverTimestamp() }]);
+    }
+    save(extra); // schreibt nur, falls die Prüfung beim Laden etwas angepasst hat
+    startOrders();
+    showApp();
+  }
+
+  // Änderung von einem anderen Gerät
+  function remoteStamm(snap) {
+    if (!snap.exists()) return;
+    const daten = snap.get('daten');
+    if (daten === synced.stamm) return;
+    let loaded = null;
+    try { loaded = normalize({ ...JSON.parse(daten), entries: state.entries }, true); } catch (e) { loaded = null; }
+    if (!loaded) return;
+    synced.stamm = daten;
+    const codeChanged = loaded.settings.teamCode !== state.settings.teamCode;
+    Object.assign(state, {
+      people: loaded.people, groups: loaded.groups, coffees: loaded.coffees,
+      beans: loaded.beans, pauses: loaded.pauses, settings: loaded.settings,
+    });
+    if (codeChanged) startOrders();
+    refresh();
+  }
+
+  async function copyText(value, message) {
+    try {
+      await navigator.clipboard.writeText(value);
+      toast(message);
+    } catch (e) {
+      toast('Kopieren nicht möglich – bitte von Hand markieren.', { error: true });
+    }
+  }
+
+  gate.addEventListener('click', async e => {
+    const el = e.target.closest('[data-gate]');
+    if (!el) return;
+    switch (el.dataset.gate) {
+      case 'login': signIn(); break;
+      case 'logout': await signOut(auth); location.reload(); break;
+      case 'reload': location.reload(); break;
+      case 'copy-uid': copyText(adminUser.uid, 'Benutzer-ID kopiert'); break;
+      case 'import': $('#gateFile').click(); break;
+      case 'legacy': {
+        const data = legacyData();
+        if (data && await confirmDialog({ title: 'Daten übernehmen?', html: `Übernommen werden ${backupSummary(data)}.`, confirmText: 'Übernehmen' })) firstStart(data);
+        break;
+      }
+      case 'fresh':
+        if (await confirmDialog({
+          title: 'Ohne alte Daten beginnen?',
+          html: 'Die Kaffeekasse startet leer mit den Beispielsorten. Ein Backup kannst du später jederzeit unter Einstellungen importieren – dabei werden dann alle Daten ersetzt.',
+          confirmText: 'Leer beginnen',
+        })) firstStart(null);
+        break;
+    }
+  });
+
+  gate.addEventListener('change', async e => {
+    if (e.target.id !== 'gateFile') return;
+    const data = await readBackupFile(e.target);
+    if (data && await confirmDialog({
+      title: 'Backup übernehmen?',
+      html: `Das Backup enthält ${backupSummary(data)}.`,
+      confirmText: 'Übernehmen',
+    })) firstStart(data);
+  });
+
+  function updateNetBanner() {
+    const warn = $('#warn');
+    warn.textContent = 'Offline – deine Änderungen werden gespeichert und übertragen, sobald wieder Internet da ist.';
+    warn.hidden = navigator.onLine;
+  }
+  window.addEventListener('online', updateNetBanner);
+  window.addEventListener('offline', updateNetBanner);
+
+  // ---------- Ereignisse ----------
+  tabbar.addEventListener('click', e => {
+    const tab = e.target.closest('.tab');
+    if (!tab) return;
+    e.preventDefault();
+    const href = tab.getAttribute('href');
+    if (location.hash === href || (href === '#/' && !location.hash)) window.scrollTo({ top: 0, behavior: 'smooth' });
+    else go(href);
+  });
+
+  app.addEventListener('click', e => {
+    const el = e.target.closest('[data-action]');
+    if (!el) return;
+    const id = el.dataset.id;
+    switch (el.dataset.action) {
+      case 'open': go('#/p/' + encodeURIComponent(id)); break;
+      case 'person-settings': go(`#/p/${encodeURIComponent(id)}/einstellungen`); break;
+      case 'goto-settings': e.preventDefault(); go('#/einstellungen'); break;
+      case 'settings-add':
+        go('#/einstellungen');
+        setTimeout(() => { const i = $('#newPerson'); if (i) i.focus(); }, 50);
+        break;
+      case 'back': goBack(el.dataset.fallback); break;
+      case 'book': book(id, el); break;
+      case 'fill-pay': {
+        const input = $('#payInput');
+        input.value = plain(Math.max(0, balanceOf(currentId)));
+        input.classList.remove('invalid');
+        input.focus();
+        break;
+      }
+      case 'del-entry': deleteEntry(id); break;
+      case 'del-person': deletePerson(id); break;
+      case 'del-coffee': deleteCoffee(id); break;
+      case 'new-bean': go('#/bohnen/neu'); break;
+      case 'edit-bean': go('#/bohnen/' + encodeURIComponent(id)); break;
+      case 'activate-bean': activateBean(id); break;
+      case 'del-bean': deleteBean(id); break;
+      case 'period':
+        statsPeriod = id;
+        try { localStorage.setItem(PERIOD_KEY, id); } catch (err) { /* ignorieren */ }
+        render();
+        break;
+      case 'toggle-group': toggleGroup(id, el); break;
+      case 'expand-all': setAllGroups(false); break;
+      case 'collapse-all': setAllGroups(true); break;
+      case 'del-group': deleteGroup(id); break;
+      case 'new-order': go('#/bestellungen/neu'); break;
+      case 'pick-person': replaceRoute('#/bestellungen/neu/' + encodeURIComponent(id)); break;
+      case 'pick-back': replaceRoute('#/bestellungen/neu'); break;
+      case 'choose-coffee': pick.coffeeId = id; updatePickUi(); break;
+      case 'qty': pick.qty = Math.min(MAX_QTY, Math.max(1, pick.qty + Number(id))); updatePickUi(); break;
+      case 'place-order': placeOrder(false); break;
+      case 'place-order-more': placeOrder(true); break;
+      case 'order-up': moveOrder(id, -1); break;
+      case 'order-down': moveOrder(id, 1); break;
+      case 'order-done': completeOrder(id); break;
+      case 'order-cancel': cancelOrder(id); break;
+      case 'all-done': completeAll(); break;
+      case 'sort-orders': sortOrdersByDrink(); break;
+      case 'logout': signOut(auth).then(() => location.reload()); break;
+      case 'export': exportData(); break;
+      case 'import': $('#importFile').click(); break;
+    }
+  });
+
+  app.addEventListener('submit', e => {
+    e.preventDefault();
+    const form = e.target.dataset.form;
+    if (form === 'pay') submitPayment();
+    else if (form === 'add-person') addPerson();
+    else if (form === 'add-coffee') addCoffee();
+    else if (form === 'person-settings') savePersonSettings();
+    else if (form === 'bean') saveBean();
+    else if (form === 'add-group') addGroup();
+  });
+
+  app.addEventListener('change', e => {
+    const t = e.target;
+    if (t.id === 'importFile') importData(t);
+    else if (t.id === 'sortSel') {
+      sortMode = t.value;
+      savePref(SORT_KEY, sortMode);
+      render();
+    } else if (t.dataset.edit) onEdit(t);
+  });
+
+  app.addEventListener('input', e => {
+    const t = e.target;
+    t.classList.remove('invalid');
+    if (t.id === 'search') {
+      const q = t.value.trim().toLocaleLowerCase('de');
+      const root = $('#peopleList');
+      root.classList.toggle('searching', q !== ''); // eingeklappte Gruppen beim Suchen zeigen
+      let shown = 0;
+      root.querySelectorAll('li[data-name]').forEach(li => {
+        const match = li.dataset.name.includes(q);
+        li.hidden = !match;
+        if (match) shown++;
+      });
+      root.querySelectorAll('.grp, .pick-sec').forEach(sec => {
+        sec.hidden = q !== '' && !sec.querySelector('li[data-name]:not([hidden])');
+      });
+      $('#noMatch').hidden = shown > 0;
+    } else if (t.id === 'psDiscount') {
+      $('#discountPreview').innerHTML = discountPreviewHtml(parsePercent(t.value));
+    }
+  });
+
+  app.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.dataset && e.target.dataset.edit) {
+      e.preventDefault();
+      e.target.blur();
+    }
+  });
+
+  app.addEventListener('pointerdown', e => {
+    const handle = e.target.closest('.q-handle');
+    if (handle && !drag && e.button === 0) startDrag(e, handle);
+  });
+  app.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.pointerId) return;
+    drag.y = e.clientY;
+    positionDrag();
+  });
+  const stopDrag = e => { if (drag && e.pointerId === drag.pointerId) endDrag(); };
+  app.addEventListener('pointerup', stopDrag);
+  app.addEventListener('pointercancel', stopDrag);
+
+  updateNetBanner();
+  startAuth();
+})();
+</script>
+</body>
+</html>
