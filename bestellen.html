@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kaffee bestellen</title>
+<meta name="description" content="Kaffee für die nächste Pause vorbestellen">
+<meta name="theme-color" content="#f6efe7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17110d" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kaffee">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="application-name" content="Kaffee bestellen">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f6efe7;
+    --surface: #fffaf4;
+    --surface-2: #f1e6d9;
+    --text: #2a1c13;
+    --muted: #7b6555;
+    --border: #e7d9c9;
+    --primary: #6b4428;
+    --primary-press: #55351e;
+    --on-primary: #fff8f0;
+    --accent: #c8894e;
+    --danger: #b0391f;
+    --danger-bg: #fbe5dd;
+    --done: #2c7543;
+    --done-bg: #e0f0e4;
+    --toast-bg: #2a1c13;
+    --toast-fg: #fff8f0;
+    --shadow: 0 1px 2px rgba(70, 40, 20, .06), 0 6px 18px rgba(70, 40, 20, .06);
+    --radius: 16px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17110d;
+      --surface: #221912;
+      --surface-2: #2e2219;
+      --text: #f5ebe0;
+      --muted: #b9a390;
+      --border: #3a2b20;
+      --primary: #c8915a;
+      --primary-press: #b47f4b;
+      --on-primary: #1c120b;
+      --accent: #e3a96b;
+      --danger: #ff8c72;
+      --danger-bg: #3d1e15;
+      --done: #7fd497;
+      --done-bg: #163020;
+      --toast-bg: #f5ebe0;
+      --toast-fg: #1c120b;
+      --shadow: none;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; min-height: 100vh;
+    background: var(--bg); color: var(--text);
+    font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  main { max-width: 560px; margin: 0 auto; padding: 0 16px 32px; }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; touch-action: manipulation; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  svg { flex: none; }
+  [hidden] { display: none !important; }
+
+  .bar { display: flex; align-items: center; min-height: 64px; padding-top: env(safe-area-inset-top); }
+  .brand { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 1.35rem; font-weight: 800; }
+  .brand-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--primary); color: var(--on-primary); }
+
+  .card { margin: 0 0 14px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .card h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font-size: 1.05rem; }
+  .step { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--primary); color: var(--on-primary); font-size: .85rem; font-weight: 800; }
+
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .choice {
+    min-height: 72px; padding: 10px 8px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    border: 2px solid var(--border); border-radius: 14px; background: var(--surface); color: var(--text);
+    font-size: 1.05rem; font-weight: 700; line-height: 1.2; text-align: center; overflow-wrap: anywhere;
+  }
+  .choice-sub { font-size: .9rem; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .choice[aria-checked="true"] { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+  .choice[aria-checked="true"] .choice-sub { color: inherit; opacity: .9; }
+  .choice:active { transform: scale(.97); }
+
+  .me { display: flex; align-items: center; gap: 12px; }
+  .me strong { flex: 1; min-width: 0; font-size: 1.2rem; overflow-wrap: anywhere; }
+  .avatar { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 800; }
+  #search { width: 100%; min-height: 48px; margin-bottom: 10px; padding: 0 14px; font-size: 17px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 48px; padding: 0 18px;
+    border: 1px solid var(--border); border-radius: 12px; background: var(--surface); font-weight: 700;
+  }
+  .btn.small { min-height: 40px; padding: 0 12px; font-size: .92rem; }
+  .btn.primary { background: var(--primary); color: var(--on-primary); border-color: transparent; }
+  .btn.primary:active { background: var(--primary-press); }
+  .btn.danger { background: var(--danger); color: #fff; border-color: transparent; }
+  .btn.ghost { background: transparent; border-color: transparent; color: var(--muted); }
+  .btn.block { width: 100%; }
+  .btn.big { min-height: 60px; font-size: 1.1rem; border-radius: 16px; }
+  .btn:disabled { opacity: .45; cursor: default; }
+
+  .order-bar { position: sticky; bottom: 0; z-index: 5; margin: 0 -16px 14px; padding: 10px 16px calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--bg) 35%); }
+
+  .success { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; padding: 14px 16px; border-radius: var(--radius); background: var(--done-bg); color: var(--done); font-weight: 800; font-size: 1.05rem; }
+  .notice { margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); color: var(--muted); }
+  .empty { margin: 0; color: var(--muted); }
+
+  .mine { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .mine-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); }
+  .mine-row:first-child { border-top: 0; }
+  .mine-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .mine-sub { font-size: .88rem; color: var(--muted); }
+  .status { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 99px; font-size: .8rem; font-weight: 800; }
+  .status.offen { background: var(--surface-2); color: var(--primary); }
+  .status.fertig { background: var(--done-bg); color: var(--done); }
+
+  .foot { text-align: center; margin: 18px 0 0; }
+  .link { border: 0; background: none; color: var(--muted); text-decoration: underline; padding: 10px; }
+
+  .center { min-height: 80vh; display: grid; align-content: center; justify-items: center; gap: 4px; text-align: center; }
+  .logo { display: grid; place-items: center; width: 84px; height: 84px; margin-bottom: 12px; border-radius: 24px; background: var(--primary); color: var(--on-primary); }
+  .center h1 { margin: 0 0 6px; font-size: 1.6rem; }
+  .lead { margin: 0 0 18px; color: var(--muted); max-width: 360px; }
+  .code-form { display: grid; gap: 10px; width: 100%; max-width: 360px; }
+  #codeInput { min-height: 56px; padding: 0 14px; font-size: 1.4rem; font-weight: 800; letter-spacing: .08em; text-align: center; text-transform: uppercase; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
+  .error { margin: 14px 0 0; color: var(--danger); font-weight: 700; max-width: 360px; }
+
+  .toast {
+    position: fixed; z-index: 50; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom));
+    display: flex; align-items: center; gap: 10px; width: max-content; max-width: calc(100vw - 32px);
+    padding: 12px 16px; border-radius: 14px; background: var(--toast-bg); color: var(--toast-fg);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .25); font-weight: 600;
+    opacity: 0; transform: translate(-50%, 16px); pointer-events: none; transition: opacity .18s, transform .18s;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .toast.error { background: var(--danger); color: #fff; }
+
+  dialog { width: min(420px, calc(100vw - 32px)); padding: 0; border: 0; border-radius: 20px; background: var(--surface); color: var(--text); box-shadow: 0 20px 60px rgba(0, 0, 0, .3); }
+  dialog::backdrop { background: rgba(30, 18, 10, .5); }
+  dialog form { padding: 20px; }
+  dialog h2 { margin: 0 0 8px; font-size: 1.2rem; }
+  dialog p { margin: 0; color: var(--muted); }
+  dialog p strong { color: var(--text); }
+  .dlg-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .dlg-actions .btn { flex: 1; }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<dialog id="dlg" aria-labelledby="dlgTitle">
+  <form method="dialog">
+    <h2 id="dlgTitle"></h2>
+    <p id="dlgMsg"></p>
+    <div class="dlg-actions">
+      <button class="btn" value="cancel">Abbrechen</button>
+      <button class="btn primary" value="ok" id="dlgOk">OK</button>
+    </div>
+  </form>
+</dialog>
+
+<script type="module">
+import { firebaseConfig, useEmulator } from './firebase-config.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
+import { getAuth, connectAuthEmulator, onAuthStateChanged, signInAnonymously } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
+import {
+  getFirestore, connectFirestoreEmulator, collection, doc, getDocs, addDoc, deleteDoc, query, where, onSnapshot, serverTimestamp,
+} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
+if (useEmulator) {
+  connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+  connectFirestoreEmulator(db, '127.0.0.1', 8080);
+}
+
+// Kollegen-App: anonyme Anmeldung, Zugriff nur mit Team-Code (Teil des Datenpfads).
+// Gelesen werden nur Namen, Sorten mit normalem Preis und Pausen – sonst nichts.
+(function () {
+  'use strict';
+
+  const CODE_KEY = 'bestellen.teamCode';
+  const PERSON_KEY = 'bestellen.person';
+  const RELOAD_AFTER = 5 * 60 * 1000; // Daten nach 5 Minuten im Hintergrund neu laden
+
+  const $ = sel => document.querySelector(sel);
+  const app = $('#app');
+  const euroFmt = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
+  const euro = cents => euroFmt.format(cents / 100);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const clock = time => time.replace(/^0(\d)/, '$1');
+  const pad = n => String(n).padStart(2, '0');
+  const dateKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const nowTime = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+  const initials = name => name.split(' ').filter(Boolean).map(w => Array.from(w)[0]).slice(0, 2).join('').toLocaleUpperCase('de');
+  const store = {
+    get(key) { try { return localStorage.getItem(key); } catch (e) { return null; } },
+    set(key, value) { try { if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value); } catch (e) { /* ignorieren */ } },
+  };
+
+  const svg = (body, size = 22) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+  const CUP = '<path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 2v2M10 2v2M14 2v2"/>';
+  const ICON = {
+    cup: svg(CUP),
+    cupBig: svg(CUP, 40),
+    check: svg('<path d="M20 6 9 17l-5-5"/>', 20),
+    checkSmall: svg('<path d="M20 6 9 17l-5-5"/>', 14),
+    alert: svg('<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/>', 20),
+  };
+
+  let code = null;      // Team-Code
+  let uid = null;       // anonyme Kennung dieses Geräts
+  let team = null;      // { people, coffees, pauses }
+  let mine = [];        // eigene Bestellungen von heute
+  let mineUnsub = null;
+  let loadedAt = 0;
+  let day = dateKey(new Date());
+  let sending = false;
+  let success = '';
+  const sel = { personId: null, coffeeId: null, pauseId: null, changingPerson: false };
+
+  // ---------- Meldungen ----------
+  const toastEl = $('#toast');
+  let toastTimer = 0;
+  function toast(msg, opts = {}) {
+    clearTimeout(toastTimer);
+    toastEl.className = 'toast' + (opts.error ? ' error' : '');
+    toastEl.innerHTML = `${opts.error ? ICON.alert : ICON.check}<span>${esc(msg)}</span>`;
+    void toastEl.offsetWidth;
+    toastEl.classList.add('show');
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3000);
+  }
+
+  const dlg = $('#dlg');
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close('cancel'); });
+  function confirmDialog({ title, html, confirmText = 'OK', danger = false }) {
+    if (typeof dlg.showModal !== 'function') return Promise.resolve(window.confirm(title));
+    $('#dlgTitle').textContent = title;
+    $('#dlgMsg').innerHTML = html;
+    const ok = $('#dlgOk');
+    ok.textContent = confirmText;
+    ok.className = 'btn ' + (danger ? 'danger' : 'primary');
+    dlg.returnValue = '';
+    dlg.showModal();
+    return new Promise(resolve => dlg.addEventListener('close', () => resolve(dlg.returnValue === 'ok'), { once: true }));
+  }
+
+  function showMessage(text, retry = false) {
+    app.innerHTML = `
+      <div class="center">
+        <div class="logo">${ICON.cupBig}</div>
+        <h1>Kaffee bestellen</h1>
+        <p class="lead">${esc(text)}</p>
+        ${retry ? '<button class="btn primary" data-act="reload">Erneut versuchen</button>' : ''}
+      </div>`;
+  }
+
+  // ---------- Start ----------
+  function codeFromLink() {
+    const match = location.hash.match(/code=([A-Za-z0-9-]+)/);
+    if (!match) return null;
+    history.replaceState(null, '', location.pathname + location.search); // Code nicht in der Adresszeile lassen
+    return match[1].toUpperCase();
+  }
+
+  function signedIn() {
+    return new Promise((resolve, reject) => {
+      const stop = onAuthStateChanged(auth, user => {
+        stop();
+        if (user) resolve(user.uid);
+        else signInAnonymously(auth).then(cred => resolve(cred.user.uid), reject);
+      });
+    });
+  }
+
+  async function start() {
+    showMessage('Wird geladen …');
+    const linked = codeFromLink();
+    if (linked) store.set(CODE_KEY, linked);
+    code = store.get(CODE_KEY);
+    try {
+      uid = await signedIn();
+    } catch (e) {
+      showMessage('Keine Verbindung. Bitte prüfe die Internetverbindung.', true);
+      return;
+    }
+    if (!code) showCodeForm();
+    else openTeam(code);
+  }
+
+  async function loadTeam(teamCode) {
+    const [people, coffees, pauses] = await Promise.all(['kollegen', 'sorten', 'pausen'].map(name => getDocs(collection(db, 'teams', teamCode, name))));
+    loadedAt = Date.now();
+    return {
+      people: people.docs.map(d => ({ id: d.id, name: d.get('name') })).sort((a, b) => a.name.localeCompare(b.name, 'de', { sensitivity: 'base' })),
+      coffees: coffees.docs.map(d => ({ id: d.id, name: d.get('name'), price: d.get('preis'), pos: d.get('pos') })).sort((a, b) => a.pos - b.pos),
+      pauses: pauses.docs.map(d => ({ id: d.id, time: d.get('zeit'), name: d.get('name') || '' })).sort((a, b) => a.time.localeCompare(b.time)),
+    };
+  }
+
+  async function openTeam(teamCode, quiet = false, loaded = null) {
+    try {
+      team = loaded || await loadTeam(teamCode);
+    } catch (e) {
+      if (e.code === 'permission-denied') {
+        showCodeForm('Der Team-Code ist nicht (mehr) gültig. Bitte den aktuellen Code eingeben oder den neuen Link bzw. QR-Code öffnen.');
+      } else if (!quiet) {
+        showMessage('Die Daten konnten nicht geladen werden. Bitte prüfe die Internetverbindung.', true);
+      }
+      return;
+    }
+    code = teamCode;
+    store.set(CODE_KEY, teamCode);
+    if (!sel.personId) {
+      const saved = store.get(PERSON_KEY);
+      if (team.people.some(p => p.id === saved)) sel.personId = saved;
+    }
+    listenMine();
+    render();
+  }
+
+  // Eigene Bestellungen von heute – live, damit "fertig" sofort erscheint
+  function listenMine() {
+    if (mineUnsub) mineUnsub();
+    day = dateKey(new Date());
+    const q = query(collection(db, 'teams', code, 'bestellungen'), where('uid', '==', uid), where('datum', '==', day));
+    mineUnsub = onSnapshot(q, snap => {
+      mine = snap.docs.map(d => {
+        const x = d.data({ serverTimestamps: 'estimate' });
+        return { id: d.id, personId: x.personId, coffeeId: x.sorteId, pauseId: x.pauseId, status: x.status, erstellt: x.erstellt ? x.erstellt.toMillis() : Date.now() };
+      });
+      const box = $('#mine');
+      if (box) box.innerHTML = mineHtml();
+    }, err => {
+      if (err.code === 'permission-denied') openTeam(code);
+      else console.error(err);
+    });
+  }
+
+  // ---------- Team-Code ----------
+  function showCodeForm(message = '', value = '') {
+    if (mineUnsub) { mineUnsub(); mineUnsub = null; }
+    team = null;
+    app.innerHTML = `
+      <div class="center">
+        <div class="logo">${ICON.cupBig}</div>
+        <h1>Kaffee bestellen</h1>
+        <p class="lead">Gib den Team-Code ein, den du von der Kaffeekasse bekommen hast. Das Gerät merkt sich den Code.</p>
+        <form class="code-form" id="codeForm" novalidate>
+          <input type="text" id="codeInput" value="${esc(value)}" placeholder="ABCD-EFGH" maxlength="40" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" aria-label="Team-Code">
+          <button class="btn primary block big" type="submit" id="codeBtn">Weiter</button>
+        </form>
+        ${message ? `<p class="error" role="alert">${esc(message)}</p>` : ''}
+      </div>`;
+  }
+
+  async function submitCode() {
+    const input = $('#codeInput');
+    const value = input.value.trim().toUpperCase().replace(/\s+/g, '-');
+    if (!/^[A-Z0-9-]{4,40}$/.test(value)) {
+      showCodeForm('Bitte den Code genau so eingeben, wie du ihn bekommen hast (Buchstaben, Ziffern, Bindestrich).', value);
+      return;
+    }
+    $('#codeBtn').disabled = true;
+    $('#codeBtn').textContent = 'Wird geprüft …';
+    let loaded;
+    try {
+      loaded = await loadTeam(value);
+    } catch (e) {
+      showCodeForm(e.code === 'permission-denied' ? 'Dieser Code ist ungültig.' : 'Keine Verbindung. Bitte später erneut versuchen.', value);
+      return;
+    }
+    await openTeam(value, false, loaded);
+  }
+
+  // ---------- Bestellen ----------
+  const upcoming = () => team.pauses.filter(b => b.time > nowTime());
+  const person = () => team.people.find(p => p.id === sel.personId);
+  const coffee = () => team.coffees.find(c => c.id === sel.coffeeId);
+  const pause = () => team.pauses.find(b => b.id === sel.pauseId);
+
+  function orderButton() {
+    const c = coffee(), b = pause();
+    if (sending) return { label: 'Wird gesendet …', ready: false };
+    if (!person()) return { label: 'Bitte zuerst auswählen, wer du bist', ready: false };
+    if (!c) return { label: 'Bitte ein Getränk auswählen', ready: false };
+    if (!b) return { label: upcoming().length ? 'Bitte eine Pause auswählen' : 'Heute keine Pause mehr', ready: false };
+    return { label: `${c.name} für ${clock(b.time)} Uhr bestellen`, ready: true };
+  }
+
+  function personHtml() {
+    const me = person();
+    if (me && !sel.changingPerson) {
+      return `<div class="me"><span class="avatar">${esc(initials(me.name))}</span><strong>${esc(me.name)}</strong><button class="btn small" data-act="change-person">Ändern</button></div>`;
+    }
+    if (!team.people.length) return '<p class="notice">Es sind noch keine Kollegen eingetragen.</p>';
+    return `
+      ${team.people.length > 12 ? '<input type="search" id="search" placeholder="Name suchen …" aria-label="Name suchen" autocomplete="off">' : ''}
+      <div class="grid" role="radiogroup" aria-label="Wer bist du?">
+        ${team.people.map(p => `<button type="button" class="choice" role="radio" aria-checked="${p.id === sel.personId}" data-pick="person" data-id="${p.id}" data-name="${esc(p.name.toLocaleLowerCase('de'))}">${esc(p.name)}</button>`).join('')}
+      </div>`;
+  }
+
+  function mineHtml() {
+    const timeOf = o => { const b = team.pauses.find(x => x.id === o.pauseId); return b ? b.time : '99:99'; };
+    const list = mine.slice().sort((a, b) => timeOf(a).localeCompare(timeOf(b)) || a.erstellt - b.erstellt);
+    const rows = list.map(o => {
+      const c = team.coffees.find(x => x.id === o.coffeeId);
+      const p = team.people.find(x => x.id === o.personId);
+      const b = team.pauses.find(x => x.id === o.pauseId);
+      const done = o.status === 'fertig';
+      return `
+        <li class="mine-row">
+          <span class="mine-main">
+            <strong>${esc(c ? c.name : 'Getränk')}</strong>
+            <span class="mine-sub">${esc(p ? p.name : '')} · ${b ? `Pause ${clock(b.time)} Uhr` : 'Pause entfernt'}</span>
+          </span>
+          <span class="status ${done ? 'fertig' : 'offen'}">${done ? ICON.checkSmall + 'fertig' : 'offen'}</span>
+          ${done ? '' : `<button class="btn small ghost" data-act="cancel" data-id="${o.id}">Stornieren</button>`}
+        </li>`;
+    }).join('');
+    return `<h2>Meine Bestellungen heute</h2>${rows ? `<ul class="mine">${rows}</ul>` : '<p class="empty">Noch nichts bestellt.</p>'}`;
+  }
+
+  function render() {
+    if (!team) return;
+    const ups = upcoming();
+    if (!ups.some(b => b.id === sel.pauseId)) sel.pauseId = ups.length ? ups[0].id : null; // nächste Pause vorauswählen
+    if (sel.personId && !person()) sel.personId = null;
+    if (sel.coffeeId && !coffee()) sel.coffeeId = null;
+    const button = orderButton();
+    app.innerHTML = `
+      <header class="bar"><h1 class="brand"><span class="brand-icon">${ICON.cup}</span>Kaffee bestellen</h1></header>
+      ${success ? `<div class="success" role="status">${ICON.check}<span>${esc(success)}</span></div>` : ''}
+      <section class="card">
+        <h2><span class="step">1</span>Wer bist du?</h2>
+        ${personHtml()}
+      </section>
+      <section class="card">
+        <h2><span class="step">2</span>Was möchtest du?</h2>
+        <div class="grid" role="radiogroup" aria-label="Getränk">
+          ${team.coffees.map(c => `<button type="button" class="choice" role="radio" aria-checked="${c.id === sel.coffeeId}" data-pick="coffee" data-id="${c.id}"><span>${esc(c.name)}</span><span class="choice-sub">${euro(c.price)}</span></button>`).join('')}
+        </div>
+      </section>
+      <section class="card">
+        <h2><span class="step">3</span>Für welche Pause?</h2>
+        ${ups.length ? `
+        <div class="grid" role="radiogroup" aria-label="Pause">
+          ${ups.map(b => `<button type="button" class="choice" role="radio" aria-checked="${b.id === sel.pauseId}" data-pick="pause" data-id="${b.id}"><span>${clock(b.time)} Uhr</span><span class="choice-sub">${b.name ? esc(b.name) : '&nbsp;'}</span></button>`).join('')}
+        </div>` : '<p class="notice">Heute steht keine Pause mehr an. Morgen kannst du wieder bestellen.</p>'}
+      </section>
+      <div class="order-bar">
+        <button class="btn primary block big" id="orderBtn" data-act="order" ${button.ready ? '' : 'disabled'}>${esc(button.label)}</button>
+      </div>
+      <section class="card" id="mine">${mineHtml()}</section>
+      <p class="foot"><button class="link" data-act="change-code">Team-Code ändern</button></p>`;
+  }
+
+  async function placeOrder() {
+    if (sending || !orderButton().ready) return;
+    const p = person(), c = coffee(), b = pause();
+    if (!navigator.onLine) {
+      toast('Keine Internetverbindung – bitte gleich noch einmal versuchen.', { error: true });
+      return;
+    }
+    const duplicate = mine.some(o => o.status === 'offen' && o.personId === p.id && o.coffeeId === c.id && o.pauseId === b.id);
+    if (duplicate && !(await confirmDialog({
+      title: 'Noch einmal bestellen?',
+      html: `Für <strong>${esc(p.name)}</strong> ist schon ein ${esc(c.name)} für die Pause um ${clock(b.time)} Uhr bestellt.`,
+      confirmText: 'Ja, noch einen',
+    }))) return;
+    sending = true;
+    const btn = $('#orderBtn');
+    btn.disabled = true;
+    btn.textContent = 'Wird gesendet …';
+    try {
+      await addDoc(collection(db, 'teams', code, 'bestellungen'), {
+        personId: p.id, sorteId: c.id, pauseId: b.id, datum: dateKey(new Date()), uid,
+        status: 'offen', quelle: 'kollege', erstellt: serverTimestamp(),
+      });
+      success = `${c.name} für die Pause um ${clock(b.time)} Uhr bestellt`;
+      sel.coffeeId = null; // verhindert versehentliches Doppelt-Bestellen
+      if (navigator.vibrate) { try { navigator.vibrate(20); } catch (e) { /* ignorieren */ } }
+      sending = false;
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      toast(success);
+    } catch (e) {
+      sending = false;
+      if (e.code === 'permission-denied') {
+        toast('Bestellen war nicht möglich – die Auswahl wird aktualisiert.', { error: true });
+        openTeam(code);
+      } else {
+        render();
+        toast('Bestellung fehlgeschlagen. Bitte erneut versuchen.', { error: true });
+      }
+    }
+  }
+
+  async function cancelOrder(id) {
+    const order = mine.find(o => o.id === id);
+    if (!order || order.status !== 'offen') return;
+    const c = team.coffees.find(x => x.id === order.coffeeId);
+    const b = team.pauses.find(x => x.id === order.pauseId);
+    const ok = await confirmDialog({
+      title: 'Bestellung stornieren?',
+      html: `${esc(c ? c.name : 'Getränk')}${b ? ` für die Pause um ${clock(b.time)} Uhr` : ''} wird storniert.`,
+      confirmText: 'Stornieren',
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await deleteDoc(doc(db, 'teams', code, 'bestellungen', id));
+      success = '';
+      toast('Bestellung storniert');
+    } catch (e) {
+      toast(e.code === 'permission-denied' ? 'Nicht mehr möglich – das Getränk ist schon fertig.' : 'Stornieren fehlgeschlagen.', { error: true });
+    }
+  }
+
+  // ---------- Ereignisse ----------
+  app.addEventListener('click', async e => {
+    const pickEl = e.target.closest('[data-pick]');
+    if (pickEl) {
+      const { pick, id } = pickEl.dataset;
+      if (pick === 'person') {
+        sel.personId = id;
+        sel.changingPerson = false;
+        store.set(PERSON_KEY, id);
+      } else if (pick === 'coffee') {
+        sel.coffeeId = id;
+      } else {
+        sel.pauseId = id;
+      }
+      success = '';
+      render();
+      return;
+    }
+    const act = e.target.closest('[data-act]');
+    if (!act) return;
+    switch (act.dataset.act) {
+      case 'order': placeOrder(); break;
+      case 'cancel': cancelOrder(act.dataset.id); break;
+      case 'change-person': sel.changingPerson = true; render(); break;
+      case 'reload': location.reload(); break;
+      case 'change-code':
+        if (await confirmDialog({ title: 'Team-Code ändern?', html: 'Danach musst du den Team-Code neu eingeben.', confirmText: 'Code eingeben' })) {
+          store.set(CODE_KEY, null);
+          showCodeForm();
+        }
+        break;
+    }
+  });
+
+  app.addEventListener('submit', e => {
+    e.preventDefault();
+    if (e.target.id === 'codeForm') submitCode();
+  });
+
+  app.addEventListener('input', e => {
+    if (e.target.id !== 'search') return;
+    const q = e.target.value.trim().toLocaleLowerCase('de');
+    app.querySelectorAll('[data-pick=person]').forEach(b => { b.hidden = !b.dataset.name.includes(q); });
+  });
+
+  // Neuer Link (…#code=…) in der bereits geöffneten App
+  window.addEventListener('hashchange', () => {
+    const linked = codeFromLink();
+    if (linked && uid) openTeam(linked);
+  });
+
+  // Beim Zurückkehren in die App: neuer Tag, geänderte Daten, vergangene Pausen
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden || !team || sending) return;
+    if (dateKey(new Date()) !== day || Date.now() - loadedAt > RELOAD_AFTER) openTeam(code, true);
+    else render();
+  });
+  setInterval(() => {
+    if (document.hidden || !team || sending || dlg.open) return;
+    const ids = upcoming().map(b => b.id).join();
+    if (ids !== app.dataset.pauses) render();
+    app.dataset.pauses = ids;
+  }, 30000);
+
+  start();
+})();
+</script>
+</body>
+</html>

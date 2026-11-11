@@ -473,6 +473,30 @@
   .stepper output { min-width: 36px; text-align: center; font-size: 1.35rem; font-weight: 800; font-variant-numeric: tabular-nums; }
   .pick-actions { display: grid; gap: 10px; }
 
+  /* ---------- Pausen, Team-Code, QR ---------- */
+  input[type="time"] {
+    min-height: 48px; padding: 0 10px; font: inherit; font-size: 17px; font-variant-numeric: tabular-nums;
+    border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text);
+  }
+  .manage .time-input, .add-form .time-input { flex: 0 0 112px; width: 112px; min-width: 0; }
+  .team-code { margin: 4px 0 0; padding: 14px; border-radius: 14px; background: var(--surface-2); text-align: center; }
+  .team-code code { font-size: 1.6rem; font-weight: 800; letter-spacing: .08em; overflow-wrap: anywhere; }
+  .qr-box { display: grid; justify-items: center; gap: 10px; margin-top: 4px; text-align: center; }
+  .qr { width: min(260px, 68vw); height: auto; border-radius: 10px; }
+  .qr-link { font-size: .8rem; color: var(--muted); word-break: break-all; }
+  .q-meta { font-size: .82rem; color: var(--muted); }
+  .q-meta .pill { font-size: .72rem; padding: 0 7px; }
+  #printArea { display: none; }
+  @media print {
+    body.print-qr { padding: 0; background: #fff; color: #000; }
+    body.print-qr > *:not(#printArea) { display: none !important; }
+    body.print-qr #printArea { display: block; padding-top: 2cm; text-align: center; font-family: system-ui, sans-serif; }
+    body.print-qr #printArea h1 { margin: 0 0 .6cm; font-size: 28pt; }
+    body.print-qr #printArea svg { width: 12cm; height: 12cm; }
+    body.print-qr #printArea p { margin: .4cm 0 0; font-size: 14pt; }
+    body.print-qr #printArea .print-link { font-size: 9pt; color: #555; word-break: break-all; }
+  }
+
   /* ---------- Anmeldung / Start ---------- */
   body.gated #app, body.gated .tabbar, body.gated #warn { display: none; }
   .gate { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
@@ -555,6 +579,8 @@
   </form>
 </dialog>
 
+<div id="printArea" aria-hidden="true"></div>
+
 <script type="module">
 import { firebaseConfig, useEmulator } from './firebase-config.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
@@ -564,7 +590,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
 import {
   initializeFirestore, connectFirestoreEmulator, persistentLocalCache, persistentMultipleTabManager,
-  doc, collection, query, where, onSnapshot, writeBatch, serverTimestamp, deleteField, Timestamp,
+  doc, collection, query, where, onSnapshot, writeBatch, serverTimestamp, deleteField, Timestamp, getDoc, getDocs,
 } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
 
 const firebaseApp = initializeApp(firebaseConfig);
@@ -602,6 +628,10 @@ if (useEmulator) {
   const MAX_QTY = 10;
   const BUCKET_SIZE = 2000; // Buchungen je Firestore-Dokument (bleibt deutlich unter 1 MB)
   const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  // QR-Code-Bibliothek (MIT-Lizenz), wird nur bei Bedarf geladen; der Hash stellt sicher, dass es genau diese Datei ist
+  const QR_LIB = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
+  const QR_LIB_HASH = 'sha384-8FWZA6BGMXhsfO+BLtrJK0We6gg5o1JyO8xQm6peWDEUs17ACA5ziE/NIAkl9z2k';
+  const PUBLIC = ['kollegen', 'sorten', 'pausen'];
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const app = $('#app');
@@ -634,6 +664,8 @@ if (useEmulator) {
     checkSmall: svg('<path d="M20 6 9 17l-5-5"/>', 14),
     alert: svg('<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/>', 20),
     alertSmall: svg('<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/>', 14),
+    qr: svg('<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/>', 20),
+    refresh: svg('<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>', 20),
     login: svg('<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/>', 20),
     logout: svg('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>', 20),
     copy: svg('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>', 18),
@@ -884,6 +916,7 @@ if (useEmulator) {
     }
     commit(writes);
     updateOrderBadge();
+    syncPublic();
   }
 
   // Schreibvorgänge [art, ref, daten] bündeln; offline werden sie später übertragen
@@ -1037,7 +1070,7 @@ if (useEmulator) {
   const dlg = $('#dlg');
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close('cancel'); });
 
-  function confirmDialog({ title, html, confirmText = 'OK', danger = false }) {
+  function confirmDialog({ title, html, confirmText = 'OK', cancelText = 'Abbrechen', danger = false }) {
     if (typeof dlg.showModal !== 'function') {
       const tmp = document.createElement('div');
       tmp.innerHTML = html;
@@ -1047,6 +1080,7 @@ if (useEmulator) {
     $('#dlgMsg').innerHTML = html;
     const ok = $('#dlgOk');
     ok.textContent = confirmText;
+    $('#dlg button[value=cancel]').textContent = cancelText;
     ok.className = 'btn ' + (danger ? 'danger' : 'primary');
     dlg.returnValue = '';
     dlg.showModal();
@@ -1445,6 +1479,12 @@ if (useEmulator) {
     return [...counts.values()].sort((a, b) => b.n - a.n).map(x => `${x.n}× ${esc(x.name)}`).join(', ');
   }
 
+  function orderMeta(o) {
+    const pause = o.pauseId ? state.pauses.find(b => b.id === o.pauseId) : null;
+    const when = o.pauseId ? (pause ? `Pause ${clock(pause.time)}` : 'Pause gelöscht') : 'ohne Pause';
+    return `${when} · ${o.quelle === 'kollege' ? '<span class="pill">vom Kollegen</span>' : 'von dir'}`;
+  }
+
   function viewOrders() {
     const orders = state.orders.filter(o => personById(o.personId) && coffeeById(o.coffeeId));
     const header = `
@@ -1472,6 +1512,7 @@ if (useEmulator) {
             <span class="q-main">
               <strong class="q-name">${esc(p.name)}</strong>
               <span class="q-drink">${esc(c.name)} · ${euro(discountedPrice(c.price, p.discount))}</span>
+              <span class="q-meta">${orderMeta(o)}</span>
               ${p.note ? `<span class="q-note">${esc(p.note)}</span>` : ''}
             </span>
             <span class="q-move">
@@ -1911,6 +1952,37 @@ if (useEmulator) {
       </section>
 
       <section class="card">
+        <h2>Pausen <span class="count">${state.pauses.length}</span></h2>
+        ${state.pauses.length ? `
+          <ul class="manage" style="margin:0 0 14px">${sortedPauses().map(b => `
+            <li>
+              <input type="time" class="time-input" data-edit="pause-time" data-id="${b.id}" value="${b.time}" aria-label="Uhrzeit der Pause um ${clock(b.time)}">
+              <input type="text" class="grow" data-edit="pause-name" data-id="${b.id}" value="${esc(b.name)}" placeholder="Bezeichnung (optional)" maxlength="${MAX_NAME}" autocomplete="off" enterkeyhint="done" aria-label="Bezeichnung der Pause um ${clock(b.time)}">
+              <button class="icon-btn del" data-action="del-pause" data-id="${b.id}" aria-label="Pause um ${clock(b.time)} löschen" title="Löschen">${ICON.trash}</button>
+            </li>`).join('')}
+          </ul>` : '<p class="empty-note" style="margin-bottom:12px">Noch keine Pausen angelegt.</p>'}
+        <form class="add-form" data-form="add-pause" novalidate>
+          <input type="time" id="newPauseTime" class="time-input" aria-label="Uhrzeit der neuen Pause">
+          <input type="text" id="newPauseName" class="grow" placeholder="z. B. Frühstück" maxlength="${MAX_NAME}" autocomplete="off" enterkeyhint="done" aria-label="Bezeichnung der neuen Pause">
+          <button class="btn primary" type="submit">${ICON.plus}Hinzufügen</button>
+        </form>
+        <p class="hint">In der Bestell-App können deine Kollegen nur Pausen wählen, die heute noch kommen.</p>
+      </section>
+
+      <section class="card">
+        <h2>Team-Code &amp; Bestell-App</h2>
+        <p class="hint" style="margin-top:0">Mit dem Link oder QR-Code öffnen deine Kollegen die Bestell-App. Sie sehen dort nur Namen, Sorten mit normalem Preis und Pausen – ohne den Code gar nichts.</p>
+        <div class="team-code"><code id="teamCode">${esc(state.settings.teamCode || '')}</code></div>
+        <div class="btn-col">
+          <button class="btn" data-action="copy-link">${ICON.copy}Link kopieren</button>
+          <button class="btn" data-action="show-qr">${ICON.qr}QR-Code anzeigen</button>
+          <button class="btn" data-action="copy-code">${ICON.copy}Nur Code kopieren</button>
+          <button class="btn" data-action="change-code">${ICON.refresh}Code ändern</button>
+        </div>
+        <p class="hint">Nach einer Änderung funktioniert der alte Code sofort nicht mehr.</p>
+      </section>
+
+      <section class="card">
         <h2>Konto</h2>
         <p class="hint" style="margin-top:0">Angemeldet als <strong>${esc(adminUser ? adminUser.email || adminUser.displayName || '' : '')}</strong>. Deine Daten liegen geschützt in deiner Firebase-Datenbank und sind auf allen Geräten verfügbar, auf denen du dich anmeldest.</p>
         <div class="btn-col"><button class="btn" data-action="logout">${ICON.logout}Abmelden</button></div>
@@ -2189,6 +2261,10 @@ if (useEmulator) {
   function onEdit(t) {
     const id = t.dataset.id;
     const kind = t.dataset.edit;
+    if (kind === 'pause-time' || kind === 'pause-name') {
+      editPause(t);
+      return;
+    }
     if (kind === 'person-name' || kind === 'coffee-name' || kind === 'group-name') {
       const isPerson = kind === 'person-name';
       const isGroup = kind === 'group-name';
@@ -2710,6 +2786,227 @@ if (useEmulator) {
       }]);
   }
 
+  // ---------- Öffentlicher Bereich für die Bestell-App ----------
+  // Unter teams/{code}/… liegen nur Namen, Sorten mit normalem Preis und Pausen. Die App gleicht
+  // den gewünschten Stand mit dem in Firestore ab und schreibt nur Unterschiede.
+  let published = null; // { kollegen: Map(id → Inhalt), … }
+  let publicUnsubs = [];
+  const canonical = o => JSON.stringify(Object.keys(o).sort().map(k => [k, o[k]]));
+
+  function publicData() {
+    return {
+      kollegen: new Map(state.people.map(p => [p.id, { name: p.name }])),
+      sorten: new Map(state.coffees.map((c, i) => [c.id, { name: c.name, preis: c.price, pos: i }])),
+      pausen: new Map(state.pauses.map(b => [b.id, { zeit: b.time, name: b.name }])),
+    };
+  }
+
+  function startPublic() {
+    publicUnsubs.forEach(stop => stop());
+    const code = state.settings.teamCode;
+    published = { kollegen: null, sorten: null, pausen: null };
+    publicUnsubs = PUBLIC.map(name => onSnapshot(collection(db, 'teams', code, name), snap => {
+      published[name] = new Map(snap.docs.map(d => [d.id, canonical(d.data())]));
+      syncPublic();
+    }, err => console.error('Öffentliche Daten', err)));
+  }
+
+  function syncPublic() {
+    if (!ready || !published || PUBLIC.some(name => !published[name])) return;
+    const code = state.settings.teamCode;
+    const wanted = publicData();
+    const writes = [];
+    for (const name of PUBLIC) {
+      const have = published[name];
+      for (const [id, data] of wanted[name]) {
+        const json = canonical(data);
+        if (have.get(id) === json) continue;
+        have.set(id, json);
+        writes.push(['set', doc(db, 'teams', code, name, id), data]);
+      }
+      for (const id of [...have.keys()]) {
+        if (wanted[name].has(id)) continue;
+        have.delete(id);
+        writes.push(['delete', doc(db, 'teams', code, name, id)]);
+      }
+    }
+    commit(writes);
+  }
+
+  function ensureTeamDoc() {
+    const ref = teamRef(state.settings.teamCode);
+    getDoc(ref).then(snap => {
+      if (!snap.exists()) commit([['set', ref, { erstellt: serverTimestamp() }]]);
+    }).catch(() => { /* offline – beim nächsten Start */ });
+  }
+
+  const orderAppLink = () => new URL(`bestellen.html#code=${encodeURIComponent(state.settings.teamCode)}`, location.href).href;
+
+  // Neuer Code: neuer Bereich mit allen öffentlichen Daten und offenen Bestellungen, alter Bereich wird gelöscht
+  async function changeTeamCode(newCode) {
+    const oldCode = state.settings.teamCode;
+    const open = state.orders.slice();
+    state.settings.teamCode = newCode;
+    save([
+      ['set', teamRef(newCode), { erstellt: serverTimestamp() }],
+      ...open.map(o => ['set', doc(db, 'teams', newCode, 'bestellungen', o.id), restorable(o)]),
+    ]);
+    startOrders();
+    startPublic();
+    const writes = [['delete', teamRef(oldCode)]];
+    for (const name of [...PUBLIC, 'bestellungen']) {
+      try {
+        (await getDocs(collection(db, 'teams', oldCode, name))).forEach(d => writes.push(['delete', d.ref]));
+      } catch (e) { console.error('Alter Team-Bereich', e); }
+    }
+    commit(writes);
+  }
+
+  async function askNewTeamCode() {
+    const suggestion = newTeamCode();
+    const ok = await confirmDialog({
+      title: 'Team-Code ändern?',
+      html: `Der bisherige Code <strong>${esc(state.settings.teamCode)}</strong> funktioniert danach sofort nicht mehr. Deine Kollegen brauchen den neuen Link oder QR-Code. Offene Bestellungen bleiben erhalten.<br><br>` +
+        `<label class="field"><span class="field-lbl">Neuer Code</span><input type="text" id="codeInput" value="${suggestion}" maxlength="40" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>` +
+        '<span class="field-hint">Der Vorschlag ist zufällig. Du kannst auch einen eigenen Code eingeben: mindestens 6 Zeichen, nur A–Z, 0–9 und Bindestrich.</span>',
+      confirmText: 'Code ändern',
+      danger: true,
+    });
+    if (!ok) return;
+    const code = $('#codeInput').value.trim().toUpperCase().replace(/\s+/g, '-');
+    if (!/^[A-Z0-9-]{6,40}$/.test(code)) {
+      toast('Ungültiger Code: mindestens 6 Zeichen, nur A–Z, 0–9 und Bindestrich.', { error: true });
+      return;
+    }
+    if (code === state.settings.teamCode) return;
+    await changeTeamCode(code);
+    render();
+    toast(`Neuer Team-Code: ${code}`);
+  }
+
+  let qrLibLoading = null;
+  function loadQrLib() {
+    if (window.qrcode) return Promise.resolve();
+    if (!qrLibLoading) {
+      qrLibLoading = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = QR_LIB;
+        script.integrity = QR_LIB_HASH;
+        script.crossOrigin = 'anonymous';
+        script.onload = resolve;
+        script.onerror = () => { qrLibLoading = null; reject(new Error('QR-Bibliothek nicht geladen')); };
+        document.head.appendChild(script);
+      });
+    }
+    return qrLibLoading;
+  }
+
+  // QR-Code als SVG, immer schwarz auf weiß (sonst erkennen Kameras ihn schlecht)
+  function qrSvg(value) {
+    const qr = window.qrcode(0, 'M');
+    qr.addData(value);
+    qr.make();
+    const size = qr.getModuleCount();
+    const margin = 4;
+    let path = '';
+    for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) if (qr.isDark(r, c)) path += `M${c + margin},${r + margin}h1v1h-1z`;
+    const total = size + 2 * margin;
+    return `<svg class="qr" viewBox="0 0 ${total} ${total}" role="img" aria-label="QR-Code zur Bestell-App" shape-rendering="crispEdges"><rect width="${total}" height="${total}" fill="#fff"/><path d="${path}" fill="#000"/></svg>`;
+  }
+
+  async function showQr() {
+    const link = orderAppLink();
+    let code;
+    try {
+      await loadQrLib();
+      code = qrSvg(link);
+    } catch (e) {
+      toast('Der QR-Code konnte nicht geladen werden – bitte Internetverbindung prüfen.', { error: true });
+      return;
+    }
+    const print = await confirmDialog({
+      title: 'QR-Code zur Bestell-App',
+      html: `<span class="qr-box">${code}<span>Mit der Handykamera scannen – die Bestell-App öffnet sich direkt mit eurem Team-Code.</span><span class="qr-link">${esc(link)}</span></span>`,
+      confirmText: 'Drucken',
+      cancelText: 'Schließen',
+    });
+    if (!print) return;
+    $('#printArea').innerHTML = `<h1>Kaffee bestellen</h1>${code}<p>QR-Code mit der Handykamera scannen</p><p class="print-link">${esc(link)}</p>`;
+    document.body.classList.add('print-qr');
+    window.addEventListener('afterprint', () => document.body.classList.remove('print-qr'), { once: true });
+    window.print();
+  }
+
+  // ---------- Pausen ----------
+  const clock = time => time.replace(/^0(\d)/, '$1'); // "09:00" → "9:00"
+  const sortedPauses = () => [...state.pauses].sort((a, b) => a.time.localeCompare(b.time));
+  const isTime = value => /^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(value);
+
+  function addPause() {
+    const timeInput = $('#newPauseTime');
+    const nameInput = $('#newPauseName');
+    const time = timeInput.value.slice(0, 5);
+    if (!isTime(time)) {
+      markInvalid(timeInput);
+      toast('Bitte eine Uhrzeit wählen.', { error: true });
+      return;
+    }
+    if (state.pauses.some(b => b.time === time)) {
+      markInvalid(timeInput);
+      toast(`Um ${clock(time)} gibt es schon eine Pause.`, { error: true });
+      return;
+    }
+    state.pauses.push({ id: uid(), time, name: cleanName(nameInput.value) });
+    save();
+    render();
+    toast(`Pause um ${clock(time)} angelegt`);
+  }
+
+  function editPause(t) {
+    const pause = state.pauses.find(b => b.id === t.dataset.id);
+    if (!pause) return;
+    if (t.dataset.edit === 'pause-time') {
+      const time = t.value.slice(0, 5);
+      if (!isTime(time) || state.pauses.some(b => b !== pause && b.time === time)) {
+        t.value = pause.time;
+        toast(isTime(time) ? `Um ${clock(time)} gibt es schon eine Pause.` : 'Bitte eine gültige Uhrzeit wählen.', { error: true });
+        return;
+      }
+      if (time === pause.time) return;
+      pause.time = time;
+      save();
+      render();
+      toast(`Pause auf ${clock(time)} verschoben`);
+    } else {
+      const name = cleanName(t.value);
+      t.value = name;
+      if (name === pause.name) return;
+      pause.name = name;
+      save();
+      toast('Bezeichnung gespeichert');
+    }
+  }
+
+  async function deletePause(id) {
+    const pause = state.pauses.find(b => b.id === id);
+    if (!pause) return;
+    const open = state.orders.filter(o => o.pauseId === id).length;
+    const ok = await confirmDialog({
+      title: `Pause um ${clock(pause.time)} löschen?`,
+      html: 'Deine Kollegen können diese Pause dann nicht mehr auswählen.' +
+        (open ? `<br><br>${plural(open, 'offene Bestellung bleibt', 'offene Bestellungen bleiben')} in der Warteschlange.` : ''),
+      confirmText: 'Löschen',
+      danger: true,
+    });
+    if (!ok) return;
+    state.pauses = state.pauses.filter(b => b !== pause);
+    save();
+    render();
+    toast(`Pause um ${clock(pause.time)} gelöscht`, {
+      undo: () => { state.pauses.push(pause); save(); refresh(); },
+    });
+  }
+
   // ---------- Anmeldung, Laden, erster Start ----------
   const gate = $('#gate');
   let unsubscribers = [];
@@ -2736,6 +3033,9 @@ if (useEmulator) {
     unsubscribers = [];
     if (ordersUnsub) ordersUnsub();
     ordersUnsub = null;
+    publicUnsubs.forEach(stop => stop());
+    publicUnsubs = [];
+    published = null;
     ready = false;
     synced.stamm = null;
     synced.buckets = new Map();
@@ -2878,6 +3178,7 @@ if (useEmulator) {
     ready = true;
     save([['set', teamRef(state.settings.teamCode), { erstellt: serverTimestamp() }], ...importedOrderWrites(start.orders)]);
     startOrders();
+    startPublic();
     showApp();
   }
 
@@ -2898,6 +3199,8 @@ if (useEmulator) {
     }
     save(extra); // schreibt nur, falls die Prüfung beim Laden etwas angepasst hat
     startOrders();
+    startPublic();
+    ensureTeamDoc();
     showApp();
   }
 
@@ -2915,7 +3218,10 @@ if (useEmulator) {
       people: loaded.people, groups: loaded.groups, coffees: loaded.coffees,
       beans: loaded.beans, pauses: loaded.pauses, settings: loaded.settings,
     });
-    if (codeChanged) startOrders();
+    if (codeChanged) {
+      startOrders();
+      startPublic();
+    }
     refresh();
   }
 
@@ -3030,6 +3336,11 @@ if (useEmulator) {
       case 'order-cancel': cancelOrder(id); break;
       case 'all-done': completeAll(); break;
       case 'sort-orders': sortOrdersByDrink(); break;
+      case 'del-pause': deletePause(id); break;
+      case 'copy-link': copyText(orderAppLink(), 'Link zur Bestell-App kopiert'); break;
+      case 'copy-code': copyText(state.settings.teamCode, 'Team-Code kopiert'); break;
+      case 'show-qr': showQr(); break;
+      case 'change-code': askNewTeamCode(); break;
       case 'logout': signOut(auth).then(() => location.reload()); break;
       case 'export': exportData(); break;
       case 'import': $('#importFile').click(); break;
@@ -3045,6 +3356,7 @@ if (useEmulator) {
     else if (form === 'person-settings') savePersonSettings();
     else if (form === 'bean') saveBean();
     else if (form === 'add-group') addGroup();
+    else if (form === 'add-pause') addPause();
   });
 
   app.addEventListener('change', e => {

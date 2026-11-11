@@ -29,7 +29,7 @@ service cloud.firestore {
     // Deine Benutzer-ID aus Firebase Authentication (Google-Login). Die Haupt-App
     // zeigt sie nach der ersten Anmeldung an.
     function isAdmin() {
-      return request.auth != null && request.auth.uid == 'HIER-DEINE-BENUTZER-ID';
+      return request.auth != null && request.auth.uid == 'nytpBdpxLheBM5FJUh43lfoQW4j2';
     }
 
     function isSignedIn() {
