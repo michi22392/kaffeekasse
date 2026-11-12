@@ -172,6 +172,14 @@
   .choice[aria-checked="true"] .fav { color: inherit; }
   .small-note { margin: 14px 0 0; font-size: .92rem; color: var(--muted); max-width: 360px; }
   .small-note + .btn { margin-top: 18px; }
+  .seats { margin-top: 3px; font-size: .8rem; font-weight: 800; color: var(--done); }
+  .seats.few { color: var(--accent); }
+  .choice.full { background: var(--surface-2); border-style: dashed; color: var(--muted); cursor: not-allowed; }
+  .choice.full .seats { color: var(--danger); }
+  .choice:disabled { opacity: .6; }
+  .choice:disabled:active { transform: none; }
+  .choice[aria-checked="true"] .seats { color: inherit; }
+  .notice.warn { margin-top: 12px; background: var(--danger-bg); color: var(--danger); font-weight: 700; }
 </style>
 </head>
 <body>
@@ -193,7 +201,7 @@ import { firebaseConfig, useEmulator } from './firebase-config.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import { getAuth, connectAuthEmulator, onAuthStateChanged, signInAnonymously } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
 import {
-  getFirestore, connectFirestoreEmulator, collection, doc, getDoc, getDocs, setDoc, addDoc, deleteDoc, query, where, onSnapshot, serverTimestamp,
+  getFirestore, connectFirestoreEmulator, collection, doc, getDoc, getDocs, setDoc, query, where, onSnapshot, serverTimestamp, runTransaction,
 } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
 
 const firebaseApp = initializeApp(firebaseConfig);
@@ -208,7 +216,8 @@ if (useEmulator) {
 //  - persönlicher Link (…/bestellen.html?k=SCHLÜSSEL): nur die eigene Person, eigene Bestellungen,
 //    Lieblingsgetränk und – falls freigegeben – der eigene Saldo
 //  - allgemeine Seite mit Team-Code (…#code=…), solange sie in der Kaffeekasse aktiv ist
-// Gelesen werden nur Namen, Sorten mit normalem Preis und Pausen – keine privaten Daten.
+// Gelesen werden nur Namen, Sorten mit normalem Preis, Pausen und wie viele Plätze je Pause noch frei
+// sind – keine privaten Daten. Jede Bestellung belegt per Transaktion einen Platz im Zähler der Pause.
 (function () {
   'use strict';
 
@@ -255,11 +264,16 @@ if (useEmulator) {
   let mine = [];        // eigene Bestellungen von heute
   let mineUnsub = null;
   let linkUnsub = null;
+  let countsUnsub = null;
+  let pausesUnsub = null;
+  let counts = new Map(); // Pause → heute schon bestellte Getränke
+  let fullNotice = '';    // Hinweis, wenn eine Pause beim Bestellen voll wurde
   let loadedAt = 0;
   let day = dateKey(new Date());
   let sending = false;
   let success = '';
-  const sel = { personId: null, coffeeId: null, pauseId: null, changingPerson: false };
+  // pauseAuto: Pause automatisch wählen (nächste mit freien Plätzen), bis selbst eine gewählt wird
+  const sel = { personId: null, coffeeId: null, pauseId: null, pauseAuto: true, changingPerson: false };
 
   // ---------- Meldungen ----------
   const toastEl = $('#toast');
@@ -290,6 +304,8 @@ if (useEmulator) {
   function stopListening() {
     if (mineUnsub) { mineUnsub(); mineUnsub = null; }
     if (linkUnsub) { linkUnsub(); linkUnsub = null; }
+    if (countsUnsub) { countsUnsub(); countsUnsub = null; }
+    if (pausesUnsub) { pausesUnsub(); pausesUnsub = null; }
   }
 
   function showScreen({ text, note = '', retry = false, id = '' }) {
@@ -406,31 +422,86 @@ if (useEmulator) {
     else showStart();
   }
 
+  const pausesFrom = snap => snap.docs
+    .map(d => ({ id: d.id, time: d.get('zeit'), name: d.get('name') || '', limit: Number.isInteger(d.get('limit')) ? d.get('limit') : 0 }))
+    .sort((a, b) => a.time.localeCompare(b.time));
+
   async function loadMenu(base) {
     const [coffees, pauses] = await Promise.all(['sorten', 'pausen'].map(name => getDocs(collection(db, ...base, name))));
     loadedAt = Date.now();
     return {
       coffees: coffees.docs.map(d => ({ id: d.id, name: d.get('name'), price: d.get('preis'), pos: d.get('pos') })).sort((a, b) => a.pos - b.pos),
-      pauses: pauses.docs.map(d => ({ id: d.id, time: d.get('zeit'), name: d.get('name') || '' })).sort((a, b) => a.time.localeCompare(b.time)),
+      pauses: pausesFrom(pauses),
     };
+  }
+
+  const pauseBase = () => (mode === 'link' ? ['pausen'] : ['teams', code, 'pausen']);
+
+  // Pausen (Uhrzeit, Limit) und Zähler live: "noch 3 von 8 frei" stimmt immer
+  // Allgemeine Seite: Wird der Team-Bereich gelöscht (Code geändert oder Seite abgeschaltet),
+  // verschwinden Pausen und Namen – dann den Code sofort neu prüfen
+  const teamGone = snap => mode === 'team' && snap.empty && snap.docChanges().some(ch => ch.type === 'removed');
+
+  function listenSeats() {
+    if (pausesUnsub) pausesUnsub();
+    if (countsUnsub) countsUnsub();
+    const stops = [];
+    stops.push(onSnapshot(collection(db, ...pauseBase()), snap => {
+      if (!team) return;
+      if (teamGone(snap)) { openTeam(code, true); return; }
+      team.pauses = pausesFrom(snap);
+      refreshSeats();
+    }, err => { if (err.code === 'permission-denied') recover(); else console.info('Pausen', err.code); }));
+    if (mode === 'team') {
+      stops.push(onSnapshot(collection(db, 'teams', code, 'kollegen'), snap => {
+        if (!team) return;
+        if (teamGone(snap)) { openTeam(code, true); return; }
+        team.people = snap.docs.map(d => ({ id: d.id, name: d.get('name') })).sort((x, y) => x.name.localeCompare(y.name, 'de', { sensitivity: 'base' }));
+        refreshSeats();
+      }, err => { if (err.code === 'permission-denied') recover(); else console.info('Kollegen', err.code); }));
+    }
+    pausesUnsub = () => stops.forEach(stop => stop());
+    countsUnsub = onSnapshot(query(collection(db, 'zaehler'), where('datum', '==', dateKey(new Date()))), snap => {
+      counts = new Map(snap.docs.map(d => [d.get('pauseId'), d.get('anzahl') || 0]));
+      refreshSeats();
+    }, err => {
+      if (err.code === 'permission-denied') recover();
+      else console.info('Zähler', err.code);
+    });
+  }
+
+  function refreshSeats() {
+    if (team && mode && !sending && !dlg.open) render();
   }
 
   // ---------- Persönlicher Link ----------
   // Dieses Gerät mit dem Schlüssel anmelden (die Regeln prüfen dabei, ob der Link gültig ist)
-  async function ensureSession(k, force = false) {
-    const mark = `${uid}|${k}`;
-    if (!force && store.get(SESSION_KEY) === mark) return;
-    await setDoc(doc(db, 'sitzungen', uid), { schluessel: k });
+  // data: { schluessel } beim persönlichen Link, { team } bei der allgemeinen Seite
+  let forceSession = false;
+  async function ensureSession(data, force = false) {
+    const mark = `${uid}|${JSON.stringify(data)}`;
+    if (!force && !forceSession && store.get(SESSION_KEY) === mark) return;
+    await setDoc(doc(db, 'sitzungen', uid), data);
     store.set(SESSION_KEY, mark);
+    forceSession = false;
+  }
+
+  // Zugriff verweigert: Anmeldung des Geräts erneuern und neu laden (höchstens alle 10 Sekunden)
+  let lastRecover = 0;
+  function recover() {
+    if (Date.now() - lastRecover < 10000) return;
+    lastRecover = Date.now();
+    forceSession = true;
+    reopen();
   }
 
   async function loadLinkMenu(k) {
     try {
-      await ensureSession(k);
+      await ensureSession({ schluessel: k });
       return await loadMenu([]);
     } catch (e) {
       if (e.code !== 'permission-denied') throw e;
-      await ensureSession(k, true); // Anmeldung erneuern (z. B. nach einem Wechsel des Links)
+      await ensureSession({ schluessel: k }, true); // Anmeldung erneuern (z. B. nach einem Wechsel des Links)
       return await loadMenu([]);
     }
   }
@@ -453,6 +524,7 @@ if (useEmulator) {
     if (!sel.coffeeId && me.fav) sel.coffeeId = me.fav; // Lieblingsgetränk vorauswählen
     listenLink();
     listenMine();
+    listenSeats();
     render();
   }
 
@@ -508,6 +580,7 @@ if (useEmulator) {
   async function openTeam(teamCode, quiet = false, loaded = null) {
     try {
       team = loaded || await loadTeam(teamCode);
+      await ensureSession({ team: teamCode }); // Gerät mit dem Team-Code anmelden
     } catch (e) {
       team = null;
       if (e.code === 'permission-denied') {
@@ -527,6 +600,7 @@ if (useEmulator) {
       if (team.people.some(p => p.id === saved)) sel.personId = saved;
     }
     listenMine();
+    listenSeats();
     render();
   }
 
@@ -538,7 +612,7 @@ if (useEmulator) {
     day = dateKey(new Date());
     const q = mode === 'link'
       ? query(collection(db, 'bestellungen'), where('personId', '==', me.personId), where('datum', '==', day))
-      : query(collection(db, 'teams', code, 'bestellungen'), where('uid', '==', uid), where('datum', '==', day));
+      : query(collection(db, 'bestellungen'), where('uid', '==', uid), where('datum', '==', day));
     mineUnsub = onSnapshot(q, snap => {
       mine = snap.docs.map(d => {
         const x = d.data({ serverTimestamps: 'estimate' });
@@ -547,7 +621,7 @@ if (useEmulator) {
       const box = $('#mine');
       if (box) box.innerHTML = mineHtml();
     }, err => {
-      if (err.code === 'permission-denied') reopen();
+      if (err.code === 'permission-denied') recover();
       else console.error(err);
     });
   }
@@ -598,6 +672,9 @@ if (useEmulator) {
 
   // ---------- Bestellen ----------
   const upcoming = () => team.pauses.filter(b => b.time > nowTime());
+  const seatsLeft = b => (b.limit > 0 ? Math.max(0, b.limit - (counts.get(b.id) || 0)) : Infinity);
+  const isFull = b => seatsLeft(b) === 0;
+  const available = () => upcoming().filter(b => !isFull(b));
   const person = () => team.people.find(p => p.id === sel.personId);
   const coffee = () => team.coffees.find(c => c.id === sel.coffeeId);
   const pause = () => team.pauses.find(b => b.id === sel.pauseId);
@@ -607,7 +684,10 @@ if (useEmulator) {
     if (sending) return { label: 'Wird gesendet …', ready: false };
     if (!person()) return { label: 'Bitte zuerst auswählen, wer du bist', ready: false };
     if (!c) return { label: 'Bitte ein Getränk auswählen', ready: false };
-    if (!b) return { label: upcoming().length ? 'Bitte eine Pause auswählen' : 'Heute keine Pause mehr', ready: false };
+    if (!b) {
+      const label = !upcoming().length ? 'Heute keine Pause mehr' : available().length ? 'Bitte eine Pause auswählen' : 'Alle Pausen sind ausgebucht';
+      return { label, ready: false };
+    }
     return { label: `${c.name} für ${clock(b.time)} Uhr bestellen`, ready: true };
   }
 
@@ -680,10 +760,26 @@ if (useEmulator) {
     return `<h2>Meine Bestellungen heute</h2>${rows ? `<ul class="mine">${rows}</ul>` : '<p class="empty">Noch nichts bestellt.</p>'}`;
   }
 
+  // Pause mit freien Plätzen ("noch 3 von 8 frei"); volle Pausen sind ausgegraut und nicht wählbar
+  function pauseChoiceHtml(b) {
+    const full = isFull(b);
+    const left = seatsLeft(b);
+    const seats = b.limit > 0 ? (full ? 'ausgebucht' : `noch ${left} von ${b.limit} frei`) : '';
+    return `<button type="button" class="choice${full ? ' full' : ''}" role="radio" aria-checked="${b.id === sel.pauseId}"${full ? ' disabled aria-disabled="true"' : ''} data-pick="pause" data-id="${b.id}">` +
+      `<span>${clock(b.time)} Uhr</span><span class="choice-sub">${b.name ? esc(b.name) : '&nbsp;'}</span>` +
+      `${seats ? `<span class="seats${!full && left <= 2 ? ' few' : ''}">${seats}</span>` : ''}</button>`;
+  }
+
   function render() {
     if (!team || !mode) return;
     const ups = upcoming();
-    if (!ups.some(b => b.id === sel.pauseId)) sel.pauseId = ups.length ? ups[0].id : null; // nächste Pause vorauswählen
+    const chosen = ups.find(b => b.id === sel.pauseId);
+    if (sel.pauseId && !chosen) { sel.pauseId = null; sel.pauseAuto = true; } // Pause ist vorbei
+    if (chosen && isFull(chosen)) {
+      if (!sel.pauseAuto) fullNotice = `Die Pause um ${clock(chosen.time)} Uhr ist inzwischen ausgebucht – bitte eine andere wählen.`;
+      sel.pauseId = null;
+    }
+    if (!sel.pauseId && sel.pauseAuto) { const free = available(); sel.pauseId = free.length ? free[0].id : null; } // nächste freie Pause
     if (sel.personId && !person()) sel.personId = null;
     if (sel.coffeeId && !coffee()) sel.coffeeId = null;
     const button = orderButton();
@@ -706,8 +802,10 @@ if (useEmulator) {
         <h2><span class="step">${n + 2}</span>Für welche Pause?</h2>
         ${ups.length ? `
         <div class="grid" role="radiogroup" aria-label="Pause">
-          ${ups.map(b => `<button type="button" class="choice" role="radio" aria-checked="${b.id === sel.pauseId}" data-pick="pause" data-id="${b.id}"><span>${clock(b.time)} Uhr</span><span class="choice-sub">${b.name ? esc(b.name) : '&nbsp;'}</span></button>`).join('')}
-        </div>` : '<p class="notice">Heute steht keine Pause mehr an. Morgen kannst du wieder bestellen.</p>'}
+          ${ups.map(pauseChoiceHtml).join('')}
+        </div>
+        ${!available().length ? '<p class="notice warn">Alle Pausen für heute sind ausgebucht.</p>' : ''}
+        ${fullNotice ? `<p class="notice warn" role="alert" id="fullNotice">${esc(fullNotice)}</p>` : ''}` : '<p class="notice">Heute steht keine Pause mehr an. Morgen kannst du wieder bestellen.</p>'}
       </section>
       <div class="order-bar">
         <button class="btn primary block big" id="orderBtn" data-act="order" ${button.ready ? '' : 'disabled'}>${esc(button.label)}</button>
@@ -716,7 +814,16 @@ if (useEmulator) {
       ${personal ? '' : '<p class="foot"><button class="link" data-act="change-code">Team-Code ändern</button></p>'}`;
   }
 
-  const ordersCollection = () => (mode === 'link' ? collection(db, 'bestellungen') : collection(db, 'teams', code, 'bestellungen'));
+  // Ist die Pause (laut Server) voll? Für die Meldung, falls die Regeln eine Bestellung ablehnen
+  async function pauseIsFull(b, datum) {
+    try {
+      const [c, pz] = await Promise.all([getDoc(doc(db, 'zaehler', `${datum}_${b.id}`)), getDoc(doc(db, ...pauseBase(), b.id))]);
+      const limit = pz.exists() && Number.isInteger(pz.get('limit')) ? pz.get('limit') : 0;
+      return limit > 0 && c.exists() && c.get('anzahl') >= limit;
+    } catch (e) {
+      return false;
+    }
+  }
 
   async function placeOrder() {
     if (sending || !orderButton().ready) return;
@@ -734,13 +841,26 @@ if (useEmulator) {
       confirmText: 'Ja, noch einen',
     }))) return;
     sending = true;
+    fullNotice = '';
     const btn = $('#orderBtn');
     btn.disabled = true;
     btn.textContent = 'Wird gesendet …';
+    const datum = dateKey(new Date());
+    const counterRef = doc(db, 'zaehler', `${datum}_${b.id}`);
+    const orderRef = doc(collection(db, 'bestellungen'));
     try {
-      await addDoc(ordersCollection(), {
-        personId: p.id, sorteId: c.id, pauseId: b.id, datum: dateKey(new Date()), uid,
-        status: 'offen', quelle: 'kollege', erstellt: serverTimestamp(),
+      // Platz belegen und Bestellung anlegen – beides oder nichts. Schicken zwei Kollegen gleichzeitig
+      // die letzte freie Bestellung ab, wiederholt Firestore die zweite Transaktion mit dem neuen Stand.
+      await runTransaction(db, async tx => {
+        const snap = await tx.get(counterRef);
+        const taken = snap.exists() ? snap.get('anzahl') : 0;
+        const live = team.pauses.find(x => x.id === b.id) || b;
+        if (live.limit > 0 && taken >= live.limit) throw Object.assign(new Error('ausgebucht'), { code: 'ausgebucht' });
+        tx.set(counterRef, { datum, pauseId: b.id, anzahl: taken + 1, letzte: orderRef.id });
+        tx.set(orderRef, {
+          personId: p.id, sorteId: c.id, pauseId: b.id, datum, uid,
+          status: 'offen', quelle: 'kollege', erstellt: serverTimestamp(), gezaehlt: true,
+        });
       });
       success = `${c.name} für die Pause um ${clock(b.time)} Uhr bestellt`;
       sel.coffeeId = null; // verhindert versehentliches Doppelt-Bestellen
@@ -750,8 +870,17 @@ if (useEmulator) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       toast(success);
     } catch (e) {
+      const full = e.code === 'ausgebucht' || (e.code === 'permission-denied' && await pauseIsFull(b, datum));
       sending = false;
-      if (e.code === 'permission-denied') {
+      if (full) {
+        const msg = `Leider ist die Pause um ${clock(b.time)} Uhr inzwischen ausgebucht`;
+        fullNotice = `${msg}. Die Bestellung wurde nicht angelegt – bitte eine andere Pause wählen.`;
+        success = '';
+        if (sel.pauseId === b.id) sel.pauseId = null;
+        sel.pauseAuto = false;
+        render();
+        toast(msg, { error: true });
+      } else if (e.code === 'permission-denied') {
         toast('Bestellen war nicht möglich – die Auswahl wird aktualisiert.', { error: true });
         reopen();
       } else {
@@ -774,8 +903,21 @@ if (useEmulator) {
     });
     if (!ok) return;
     try {
-      const ref = mode === 'link' ? doc(db, 'bestellungen', id) : doc(db, 'teams', code, 'bestellungen', id);
-      await deleteDoc(ref);
+      // Stornieren und den Platz in der Pause wieder freigeben – in einer Transaktion
+      const ref = doc(db, 'bestellungen', id);
+      await runTransaction(db, async tx => {
+        const snap = await tx.get(ref);
+        if (!snap.exists()) return;
+        const x = snap.data();
+        if (x.gezaehlt === true) {
+          const counterRef = doc(db, 'zaehler', `${x.datum}_${x.pauseId}`);
+          const counter = await tx.get(counterRef);
+          if (counter.exists() && counter.get('anzahl') > 0) {
+            tx.set(counterRef, { datum: x.datum, pauseId: x.pauseId, anzahl: counter.get('anzahl') - 1, letzte: id });
+          }
+        }
+        tx.delete(ref);
+      });
       success = '';
       toast('Bestellung storniert');
     } catch (e) {
@@ -795,9 +937,13 @@ if (useEmulator) {
       } else if (pick === 'coffee') {
         sel.coffeeId = id;
       } else {
+        const b = team.pauses.find(x => x.id === id);
+        if (!b || isFull(b)) return;
         sel.pauseId = id;
+        sel.pauseAuto = false;
       }
       success = '';
+      fullNotice = '';
       render();
       return;
     }

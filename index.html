@@ -491,6 +491,26 @@
   .link-state.off { color: var(--debt); }
   .link-card .switch { margin-top: 14px; }
   .link-card .switch span:last-child { font-weight: 600; }
+  .q-top { display: grid; gap: 8px; margin: 0 0 14px; }
+  .qsec .grp-head { align-items: center; }
+  .qsec.next .grp-head { background: var(--primary); color: var(--on-primary); }
+  .qsec.next .grp-chev, .qsec.next .grp-meta { color: inherit; opacity: .9; }
+  .qsec.next .grp-meta .debt { color: inherit; }
+  .sec-title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .sec-title .grp-name { flex: none; }
+  .sec-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .sec-tag { font-size: .7rem; font-weight: 800; padding: 1px 8px; border-radius: 99px; background: var(--surface); color: var(--muted); }
+  .sec-tag.full { background: var(--debt-bg); color: var(--debt); }
+  .sec-tag.warn { background: var(--debt-bg); color: var(--debt); }
+  .new-badge { flex: none; font-size: .75rem; font-weight: 800; padding: 3px 9px; border-radius: 99px; background: var(--accent); color: #fff; }
+  .qsec .grp-body { padding: 12px 0 4px; }
+  .q-head { margin: 0 0 10px; padding: 0 4px; }
+  .qsec .q-tools { margin: 0 0 12px; }
+  .limit-row { flex-basis: 100%; display: flex; align-items: center; gap: 8px; padding: 0 0 6px; font-size: .88rem; color: var(--muted); }
+  .limit-row input { flex: 0 0 72px; width: 72px; min-height: 40px; text-align: center; }
+  .manage li.pause-item { flex-wrap: wrap; row-gap: 6px; }
+  .limit-warn { display: flex; gap: 6px; align-items: flex-start; margin: 12px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--debt-bg); color: var(--debt); font-size: .9rem; font-weight: 600; }
+  .limit-warn svg { flex: none; margin-top: 2px; }
   .q-meta { font-size: .82rem; color: var(--muted); }
   .q-meta .pill { font-size: .72rem; padding: 0 7px; }
   #printArea { display: none; }
@@ -597,7 +617,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
 import {
   initializeFirestore, connectFirestoreEmulator, persistentLocalCache, persistentMultipleTabManager,
-  doc, collection, query, where, onSnapshot, writeBatch, serverTimestamp, deleteField, Timestamp, getDoc, getDocs,
+  doc, collection, query, where, onSnapshot, writeBatch, serverTimestamp, deleteField, Timestamp, getDoc, getDocs, increment,
 } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
 
 const firebaseApp = initializeApp(firebaseConfig);
@@ -633,6 +653,9 @@ if (useEmulator) {
     ['haeufig', 'Am häufigsten bestellt'], ['zuletzt', 'Zuletzt bestellt'], ['name', 'Name (A–Z)'],
   ];
   const MAX_QTY = 10;
+  const MAX_LIMIT = 999; // höchstes Bestelllimit je Pause
+  const FOLD_KEY = 'kaffeekasse.bestellbereiche';
+  const CLEANUP_KEY = 'kaffeekasse.aufgeraeumt';
   const BUCKET_SIZE = 2000; // Buchungen je Firestore-Dokument (bleibt deutlich unter 1 MB)
   const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   // QR-Code-Bibliothek (MIT-Lizenz), wird nur bei Bedarf geladen; der Hash stellt sicher, dass es genau diese Datei ist
@@ -857,7 +880,10 @@ if (useEmulator) {
       .map(o => ({ id: o.id, personId: o.personId, coffeeId: o.coffeeId, createdAt: Number.isFinite(o.createdAt) ? o.createdAt : 0 }));
     const pauses = (Array.isArray(d.pauses) ? d.pauses : [])
       .filter(b => b && isId(b.id) && typeof b.time === 'string' && /^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(b.time))
-      .map(b => ({ id: b.id, time: b.time, name: text(b.name, MAX_NAME) }));
+      .map(b => ({
+        id: b.id, time: b.time, name: text(b.name, MAX_NAME),
+        limit: Number.isInteger(b.limit) && b.limit > 0 && b.limit <= MAX_LIMIT ? b.limit : 0, // 0 = kein Limit
+      }));
     const st = d.settings && typeof d.settings === 'object' ? d.settings : {};
     const settings = {
       teamCode: typeof st.teamCode === 'string' && /^[A-Z0-9-]{4,40}$/.test(st.teamCode) ? st.teamCode : null,
@@ -945,8 +971,8 @@ if (useEmulator) {
   function commit(writes) {
     for (let i = 0; i < writes.length; i += 450) {
       const batch = writeBatch(db);
-      for (const [op, ref, data] of writes.slice(i, i + 450)) {
-        if (op === 'set') batch.set(ref, data);
+      for (const [op, ref, data, opts] of writes.slice(i, i + 450)) {
+        if (op === 'set') { if (opts) batch.set(ref, data, opts); else batch.set(ref, data); }
         else if (op === 'update') batch.update(ref, data);
         else batch.delete(ref);
       }
@@ -1558,32 +1584,127 @@ if (useEmulator) {
     return [...counts.values()].sort((a, b) => b.n - a.n).map(x => `${x.n}× ${esc(x.name)}`).join(', ');
   }
 
-  function orderMeta(o) {
-    const pause = o.pauseId ? state.pauses.find(b => b.id === o.pauseId) : null;
-    const when = o.pauseId ? (pause ? `Pause ${clock(pause.time)}` : 'Pause gelöscht') : 'ohne Pause';
-    return `${when} · ${o.quelle === 'kollege' ? '<span class="pill">vom Kollegen</span>' : 'von dir'}`;
+  // ----- Bestellungen nach Pausen -----
+  // Bereiche: anstehende Pausen (bzw. solche mit offenen Bestellungen) nach Uhrzeit, dann "Ohne Pause",
+  // dann erledigte Pausen von heute, zuletzt offene Bestellungen von früheren Tagen.
+  let sectionFold = { day: null, map: {} }; // ein-/ausgeklappte Bereiche (gilt für den Tag)
+  try {
+    const f = JSON.parse(localStorage.getItem(FOLD_KEY) || 'null');
+    if (f && typeof f.day === 'string' && f.map && typeof f.map === 'object') sectionFold = f;
+  } catch (e) { /* ignorieren */ }
+  let lastSections = null; // Stand bei der letzten Anzeige (für automatisches Ein- und Ausklappen)
+
+  function foldMap() {
+    const day = todayKey();
+    if (sectionFold.day !== day) sectionFold = { day, map: {} };
+    return sectionFold.map;
+  }
+  const saveFold = () => savePref(FOLD_KEY, JSON.stringify(sectionFold));
+
+  function orderSections() {
+    const today = todayKey();
+    const now = nowTime();
+    const pauseIds = new Set(state.pauses.map(b => b.id));
+    const byPause = new Map();
+    const none = [];
+    const old = [];
+    for (const o of state.orders) {
+      if (!personById(o.personId) || !coffeeById(o.coffeeId)) continue;
+      if (o.datum && o.datum < today) old.push(o);
+      else if (o.pauseId && pauseIds.has(o.pauseId)) {
+        if (!byPause.has(o.pauseId)) byPause.set(o.pauseId, []);
+        byPause.get(o.pauseId).push(o);
+      } else none.push(o);
+    }
+    const pauses = sortedPauses().map(b => {
+      const orders = byPause.get(b.id) || [];
+      return {
+        key: 'p:' + b.id, kind: 'pause', pause: b, orders, count: pauseCount(b.id), limit: b.limit,
+        closed: b.time <= now, active: b.time > now || orders.length > 0,
+      };
+    }).filter(sec => sec.active || sec.count > 0);
+    const list = pauses.filter(sec => sec.active);
+    if (none.length) list.push({ key: 'ohne', kind: 'none', orders: none });
+    list.push(...pauses.filter(sec => !sec.active));
+    if (old.length) list.push({ key: 'frueher', kind: 'old', orders: old });
+    return list;
   }
 
-  function viewOrders() {
-    const orders = state.orders.filter(o => personById(o.personId) && coffeeById(o.coffeeId));
-    const header = `
-      <header class="bar">
-        <h1 class="page-title">Bestellungen</h1>
-        ${orders.length ? `<span class="count big">${orders.length} offen</span>` : ''}
-      </header>`;
-    if (!orders.length) {
-      return header + `
-        <div class="empty">
-          <div class="empty-icon">${ICON.ordersBig}</div>
-          <p>Keine offenen Bestellungen.</p>
-          <button class="btn primary" data-action="new-order">${ICON.plus}Bestellung hinzufügen</button>
-        </div>`;
+  const sectionByKey = key => orderSections().find(sec => sec.key === key);
+  const nextSectionKey = list => { const sec = list.find(x => x.kind === 'pause' && x.active); return sec ? sec.key : (list[0] && list[0].key); };
+
+  function sectionTitle(sec) {
+    if (sec.kind === 'pause') return `${clock(sec.pause.time)} Uhr${sec.pause.name ? ` · ${esc(sec.pause.name)}` : ''}`;
+    return sec.kind === 'none' ? 'Ohne Pause' : 'Frühere Tage';
+  }
+  const sectionPhrase = sec => (sec.kind === 'pause' ? `der Pause um ${clock(sec.pause.time)} Uhr` : sec.kind === 'none' ? 'ohne Pause' : 'von früheren Tagen');
+
+  function isCollapsed(sec, nextKey) {
+    const map = foldMap();
+    if (sec.key in map) return map[sec.key];
+    if (!sec.orders.length && (sec.kind !== 'pause' || sec.count > 0)) return true; // alles erledigt
+    if (sec.key === nextKey) return false;
+    return sec.kind !== 'none';
+  }
+
+  // Erledigte Bereiche klappen ein; wird eine andere Pause zur nächsten, klappt sie aus
+  function autoFold(list, nextKey) {
+    const map = foldMap();
+    if (lastSections) {
+      for (const sec of list) {
+        if ((lastSections.open.get(sec.key) || 0) > 0 && !sec.orders.length) map[sec.key] = true;
+      }
+      if (nextKey && nextKey !== lastSections.next) delete map[nextKey];
     }
-    const persons = new Set(orders.map(o => o.personId)).size;
-    const items = orders.map((o, i) => {
-      const p = personById(o.personId);
-      const c = coffeeById(o.coffeeId);
-      return `
+    lastSections = { next: nextKey, open: new Map(list.map(sec => [sec.key, sec.orders.length])) };
+    saveFold();
+  }
+
+  function orderMeta(o, sec) {
+    const parts = [];
+    if (sec.kind !== 'pause') {
+      if (sec.kind === 'old' && /^\d{4}-\d{2}-\d{2}$/.test(o.datum || '')) {
+        const [y, m, d] = o.datum.split('-').map(Number);
+        parts.push(shortDateFmt.format(new Date(y, m - 1, d)));
+      }
+      if (o.pauseId) {
+        const pause = state.pauses.find(b => b.id === o.pauseId);
+        parts.push(pause ? `Pause ${clock(pause.time)}` : 'Pause gelöscht');
+      }
+    }
+    parts.push(o.quelle === 'kollege' ? '<span class="pill">vom Kollegen</span>' : 'von dir');
+    return parts.join(' · ');
+  }
+
+  function sectionHeadHtml(sec, collapsed) {
+    const open = sec.orders.length;
+    const fresh = collapsed ? sec.orders.filter(o => !seenOrders.has(o.id)).length : 0;
+    const full = sec.kind === 'pause' && sec.limit > 0 && sec.count >= sec.limit;
+    const tags = [];
+    if (full) tags.push('<span class="sec-tag full">ausgebucht</span>');
+    if (sec.kind === 'pause' && sec.closed) tags.push('<span class="sec-tag">Bestellschluss erreicht</span>');
+    if (sec.kind === 'old') tags.push('<span class="sec-tag warn">noch nicht verbucht</span>');
+    const meta = [];
+    if (sec.kind === 'pause') {
+      meta.push(`<span class="sec-count${full ? ' debt' : ''}">${sec.limit ? `${sec.count} / ${sec.limit} Getränke` : plural(sec.count, 'Getränk', 'Getränke')}</span>`);
+    }
+    meta.push(`<span>${open ? `${open} offen` : sec.kind === 'pause' && !sec.count ? 'keine Bestellung' : 'alles erledigt'}</span>`);
+    return `
+          <button class="grp-head" data-action="toggle-section" data-id="${sec.key}" aria-expanded="${!collapsed}">
+            <span class="grp-chev">${ICON.chevDown}</span>
+            <span class="sec-title">
+              <span class="grp-name">${sectionTitle(sec)}</span>
+              ${tags.length ? `<span class="sec-tags">${tags.join('')}</span>` : ''}
+            </span>
+            ${fresh ? `<span class="new-badge">+${fresh} neu</span>` : ''}
+            <span class="grp-meta">${meta.join('')}</span>
+          </button>`;
+  }
+
+  function queueItemHtml(o, i, sec) {
+    const p = personById(o.personId);
+    const c = coffeeById(o.coffeeId);
+    return `
         <li class="q-item" data-id="${o.id}">
           <div class="q-row">
             <span class="q-handle" title="Zum Verschieben ziehen" aria-hidden="true">${ICON.grip}</span>
@@ -1591,12 +1712,12 @@ if (useEmulator) {
             <span class="q-main">
               <strong class="q-name">${esc(p.name)}</strong>
               <span class="q-drink">${esc(c.name)} · ${euro(discountedPrice(c.price, p.discount))}</span>
-              <span class="q-meta">${orderMeta(o)}</span>
+              <span class="q-meta">${orderMeta(o, sec)}</span>
               ${p.note ? `<span class="q-note">${esc(p.note)}</span>` : ''}
             </span>
             <span class="q-move">
               <button class="icon-btn" data-action="order-up" data-id="${o.id}" aria-label="${esc(p.name)} nach oben" ${i === 0 ? 'disabled' : ''}>${ICON.up}</button>
-              <button class="icon-btn" data-action="order-down" data-id="${o.id}" aria-label="${esc(p.name)} nach unten" ${i === orders.length - 1 ? 'disabled' : ''}>${ICON.down}</button>
+              <button class="icon-btn" data-action="order-down" data-id="${o.id}" aria-label="${esc(p.name)} nach unten" ${i === sec.orders.length - 1 ? 'disabled' : ''}>${ICON.down}</button>
             </span>
           </div>
           <div class="q-acts">
@@ -1604,19 +1725,77 @@ if (useEmulator) {
             <button class="btn small primary" data-action="order-done" data-id="${o.id}">${ICON.check}Fertig</button>
           </div>
         </li>`;
+  }
+
+  function sectionBodyHtml(sec) {
+    if (!sec.orders.length) {
+      return `<p class="empty-note grp-empty">${sec.kind === 'pause' && !sec.count ? 'Noch keine Bestellungen für diese Pause.' : 'Alle Bestellungen sind erledigt.'}</p>`;
+    }
+    const persons = new Set(sec.orders.map(o => o.personId)).size;
+    return `
+          <div class="q-head">
+            <p class="q-sum">${orderSummary(sec.orders)}</p>
+            <p class="q-sub">${plural(sec.orders.length, 'Getränk', 'Getränke')} für ${plural(persons, 'Person', 'Personen')}</p>
+          </div>
+          <div class="q-tools">
+            <button class="btn small" data-action="sort-orders" data-id="${sec.key}" ${sec.orders.length < 2 ? 'disabled' : ''}>Nach Getränk sortieren</button>
+            <button class="btn small" data-action="all-done" data-id="${sec.key}">${ICON.check}Alle fertig</button>
+          </div>
+          <ol class="queue" data-section="${sec.key}">${sec.orders.map((o, i) => queueItemHtml(o, i, sec)).join('')}</ol>`;
+  }
+
+  function viewOrders() {
+    const list = orderSections();
+    const open = list.reduce((sum, sec) => sum + sec.orders.length, 0);
+    const header = `
+      <header class="bar">
+        <h1 class="page-title">Bestellungen</h1>
+        ${open ? `<span class="count big">${open} offen</span>` : ''}
+      </header>`;
+    if (!list.length) {
+      return header + `
+        <div class="empty">
+          <div class="empty-icon">${ICON.ordersBig}</div>
+          <p>Keine offenen Bestellungen.</p>
+          <button class="btn primary" data-action="new-order">${ICON.plus}Bestellung hinzufügen</button>
+        </div>`;
+    }
+    const nextKey = nextSectionKey(list);
+    autoFold(list, nextKey);
+    const sections = list.map(sec => {
+      const collapsed = isCollapsed(sec, nextKey);
+      const head = sectionHeadHtml(sec, collapsed);
+      if (!collapsed) sec.orders.forEach(o => seenOrders.add(o.id));
+      return `
+        <section class="grp qsec${collapsed ? ' collapsed' : ''}${sec.key === nextKey ? ' next' : ''}" data-section="${sec.key}">
+          ${head}
+          <div class="grp-body">${sectionBodyHtml(sec)}</div>
+        </section>`;
     }).join('');
     return header + `
-      <section class="card q-summary">
-        <p class="q-sum">${orderSummary(orders)}</p>
-        <p class="q-sub">${plural(orders.length, 'Getränk', 'Getränke')} für ${plural(persons, 'Person', 'Personen')}</p>
-      </section>
-      <button class="btn primary block" data-action="new-order">${ICON.plus}Bestellung hinzufügen</button>
-      <div class="q-tools">
-        <button class="btn small" data-action="sort-orders">Nach Getränk sortieren</button>
-        <button class="btn small" data-action="all-done">${ICON.check}Alle fertig</button>
+      <div class="q-top">
+        <button class="btn primary block" data-action="new-order">${ICON.plus}Bestellung hinzufügen</button>
+        ${list.length > 1 ? `
+        <div class="fold-btns">
+          <button type="button" class="btn small" data-action="sections-open">Alle ausklappen</button>
+          <button type="button" class="btn small" data-action="sections-close">Alle einklappen</button>
+        </div>` : ''}
       </div>
-      <ol class="queue" id="queue">${items}</ol>
-      <p class="hint">Reihenfolge ändern: am Griff links ziehen oder die Pfeile nutzen.</p>`;
+      ${sections}
+      <p class="hint">Reihenfolge ändern: am Griff links ziehen oder die Pfeile nutzen – jeweils innerhalb einer Pause.</p>`;
+  }
+
+  function toggleSection(key, btn) {
+    foldMap()[key] = btn.getAttribute('aria-expanded') === 'true';
+    saveFold();
+    render();
+  }
+
+  function setAllSections(collapse) {
+    const map = foldMap();
+    orderSections().forEach(sec => { map[sec.key] = collapse; });
+    saveFold();
+    render();
   }
 
   // Schritt 1: Person auswählen (nach Gruppen geordnet)
@@ -1662,8 +1841,9 @@ if (useEmulator) {
   function viewOrderDrink(id) {
     const p = personById(id);
     if (!pick || pick.personId !== id) {
-      pick = { personId: id, coffeeId: coffeeById(p.favoriteCoffeeId) ? p.favoriteCoffeeId : null, qty: 1 };
+      pick = { personId: id, coffeeId: coffeeById(p.favoriteCoffeeId) ? p.favoriteCoffeeId : null, qty: 1, pauseId: defaultPauseId() };
     }
+    if (pick.pauseId && !state.pauses.some(b => b.id === pick.pauseId)) pick.pauseId = null;
     if (pick.coffeeId && !coffeeById(pick.coffeeId)) pick.coffeeId = null;
     const group = groupById(p.groupId);
     const info = [group ? esc(group.name) : '', p.discount ? `${numFmt.format(p.discount)} % Rabatt` : ''].filter(Boolean).join(' · ');
@@ -1700,6 +1880,10 @@ if (useEmulator) {
           </span>
         </div>` : '<p class="empty-note">Noch keine Kaffeesorten angelegt.</p>'}
       </section>
+      <section class="card">
+        <h2>Pause</h2>
+        <div id="pausePick">${pausePickHtml()}</div>
+      </section>
       <div class="pick-actions">
         <button class="btn primary block" data-action="place-order" id="placeBtn" ${pick.coffeeId ? '' : 'disabled'}>${placeLabel()}</button>
         <button class="btn block" data-action="place-order-more" ${pick.coffeeId ? '' : 'disabled'}>Vormerken &amp; weiteres Getränk</button>
@@ -1711,8 +1895,39 @@ if (useEmulator) {
     return c ? `${pick.qty}× ${esc(c.name)} vormerken` : 'Getränk auswählen';
   }
 
+  // Vorauswahl: die nächste Pause (bzw. die, deren Bestellungen gerade zubereitet werden)
+  function defaultPauseId() {
+    const sec = orderSections().find(x => x.kind === 'pause' && x.active);
+    return sec ? sec.pause.id : null;
+  }
+
+  function pausePickHtml() {
+    const now = nowTime();
+    const options = sortedPauses().filter(b => b.time > now || b.id === pick.pauseId || state.orders.some(o => o.pauseId === b.id && o.datum === todayKey()));
+    const choice = (id, label, sub) => `
+          <button type="button" class="choice-btn" role="radio" aria-checked="${(pick.pauseId || '') === id}" data-action="choose-pause" data-id="${id}">
+            <span>${label}</span><span class="price">${sub}</span>
+          </button>`;
+    const grid = options.map(b => {
+      const n = pauseCount(b.id);
+      const sub = b.limit ? `${n} / ${b.limit}${n >= b.limit ? ' · ausgebucht' : ''}` : plural(n, 'Getränk', 'Getränke');
+      return choice(b.id, `${clock(b.time)} Uhr`, sub);
+    }).join('') + choice('', 'Ohne Pause', 'ohne Limit');
+    return `<div class="coffee-grid" role="radiogroup" aria-label="Pause">${grid}</div>${limitWarnHtml()}`;
+  }
+
+  function limitWarnHtml() {
+    const b = pick.pauseId && state.pauses.find(x => x.id === pick.pauseId);
+    if (!b || !b.limit) return '';
+    const after = pauseCount(b.id) + pick.qty;
+    if (after <= b.limit) return '';
+    return `<p class="limit-warn" id="limitWarn">${ICON.alertSmall}<span>Damit wird das Limit der Pause um ${clock(b.time)} Uhr überschritten (${after} / ${b.limit}). Du darfst das – deine Kollegen nicht.</span></p>`;
+  }
+
   function updatePickUi() {
-    app.querySelectorAll('.choice-btn').forEach(b => b.setAttribute('aria-checked', String(b.dataset.id === pick.coffeeId)));
+    app.querySelectorAll('[data-action=choose-coffee]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.id === pick.coffeeId)));
+    const pausePick = $('#pausePick');
+    if (pausePick) pausePick.innerHTML = pausePickHtml();
     $('#qty').textContent = pick.qty;
     $('#placeBtn').innerHTML = placeLabel();
     app.querySelectorAll('[data-action^="place-order"]').forEach(b => { b.disabled = !pick.coffeeId; });
@@ -2034,10 +2249,15 @@ if (useEmulator) {
         <h2>Pausen <span class="count">${state.pauses.length}</span></h2>
         ${state.pauses.length ? `
           <ul class="manage" style="margin:0 0 14px">${sortedPauses().map(b => `
-            <li>
+            <li class="pause-item">
               <input type="time" class="time-input" data-edit="pause-time" data-id="${b.id}" value="${b.time}" aria-label="Uhrzeit der Pause um ${clock(b.time)}">
               <input type="text" class="grow" data-edit="pause-name" data-id="${b.id}" value="${esc(b.name)}" placeholder="Bezeichnung (optional)" maxlength="${MAX_NAME}" autocomplete="off" enterkeyhint="done" aria-label="Bezeichnung der Pause um ${clock(b.time)}">
               <button class="icon-btn del" data-action="del-pause" data-id="${b.id}" aria-label="Pause um ${clock(b.time)} löschen" title="Löschen">${ICON.trash}</button>
+              <label class="limit-row">
+                <span>Limit</span>
+                <input type="text" inputmode="numeric" data-edit="pause-limit" data-id="${b.id}" value="${b.limit || ''}" placeholder="–" maxlength="3" autocomplete="off" enterkeyhint="done" aria-label="Limit für die Pause um ${clock(b.time)} (leer = kein Limit)">
+                <span>${b.limit ? `höchstens ${plural(b.limit, 'Getränk', 'Getränke')} pro Tag` : 'kein Limit'}</span>
+              </label>
             </li>`).join('')}
           </ul>` : '<p class="empty-note" style="margin-bottom:12px">Noch keine Pausen angelegt.</p>'}
         <form class="add-form" data-form="add-pause" novalidate>
@@ -2046,6 +2266,7 @@ if (useEmulator) {
           <button class="btn primary" type="submit">${ICON.plus}Hinzufügen</button>
         </form>
         <p class="hint">In der Bestell-App können deine Kollegen nur Pausen wählen, die heute noch kommen.</p>
+        <p class="hint">Limit: höchstens so viele Getränke pro Tag für diese Pause (leer oder 0 = kein Limit). Stornierte Bestellungen geben den Platz wieder frei. Eine Änderung gilt sofort; du selbst kannst beim Eintragen über das Limit gehen.</p>
       </section>
 
       ${linksSectionHtml()}
@@ -2278,13 +2499,13 @@ if (useEmulator) {
     const removedOrders = state.orders.filter(o => o.personId === id);
     state.people = state.people.filter(x => x.id !== id);
     state.entries = state.entries.filter(e => e.personId !== id);
-    save(removedOrders.map(o => ['delete', orderRef(o)]));
+    save([...removedOrders.map(o => ['delete', orderRef(o)]), ...countWrites(removedOrders, -1)]);
     refresh();
     toast(`${p.name} gelöscht`, {
       undo: () => {
         state.people.push(p);
         state.entries.push(...removed);
-        save(removedOrders.map(o => ['set', orderRef(o), restorable(o)]));
+        save([...removedOrders.map(o => ['set', orderRef(o), restorable(o)]), ...countWrites(removedOrders, 1)]);
         refresh();
       },
     });
@@ -2341,13 +2562,13 @@ if (useEmulator) {
     const removedOrders = state.orders.filter(o => o.coffeeId === id);
     state.coffees.splice(idx, 1);
     fans.forEach(p => { p.favoriteCoffeeId = null; });
-    save(removedOrders.map(o => ['delete', orderRef(o)]));
+    save([...removedOrders.map(o => ['delete', orderRef(o)]), ...countWrites(removedOrders, -1)]);
     refresh();
     toast(`${c.name} gelöscht`, {
       undo: () => {
         state.coffees.splice(Math.min(idx, state.coffees.length), 0, c);
         fans.forEach(p => { if (p.favoriteCoffeeId === null) p.favoriteCoffeeId = c.id; });
-        save(removedOrders.map(o => ['set', orderRef(o), restorable(o)]));
+        save([...removedOrders.map(o => ['set', orderRef(o), restorable(o)]), ...countWrites(removedOrders, 1)]);
         refresh();
       },
     });
@@ -2373,7 +2594,7 @@ if (useEmulator) {
   function onEdit(t) {
     const id = t.dataset.id;
     const kind = t.dataset.edit;
-    if (kind === 'pause-time' || kind === 'pause-name') {
+    if (kind === 'pause-time' || kind === 'pause-name' || kind === 'pause-limit') {
       editPause(t);
       return;
     }
@@ -2594,20 +2815,28 @@ if (useEmulator) {
   // Die Warteschlange liegt in Firestore. Jede Änderung wird geschrieben und kommt über den
   // Echtzeit-Listener sofort zurück (auch offline). Reihenfolge: Feld "pos", sonst Eingangszeit.
   let ordersUnsub = null;
+  let countsUnsub = null;
+  let countsDay = null;
+  let pauseCounts = new Map(); // Pause → heute bestellte Getränke (Zähler)
   let pendingFocus = null;
   let ordersDirty = false;
+  const seenOrders = new Set(); // schon angezeigte Bestellungen (für "+2 neu")
+  let ordersPrimed = false;
 
   const dateKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const todayKey = () => dateKey(new Date());
+  const nowTime = () => { const d = new Date(); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
   const orderKey = o => (o.pos !== null ? o.pos : o.erstellt);
   const compareOrders = (a, b) => orderKey(a) - orderKey(b) || a.erstellt - b.erstellt || (a.id < b.id ? -1 : 1);
   const vibrate = () => { if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) { /* ignorieren */ } } };
+  const counterRef = (datum, pauseId) => doc(db, 'zaehler', `${datum}_${pauseId}`);
+  const pauseCount = pauseId => pauseCounts.get(pauseId) || 0;
 
-  function orderFromDoc(snap, team = null) {
+  function orderFromDoc(snap) {
     const x = snap.data({ serverTimestamps: 'estimate' });
     return {
       id: snap.id,
-      team, // Team-Code, falls über die allgemeine Seite bestellt
+      team: null,
       personId: x.personId,
       coffeeId: x.sorteId,
       pauseId: x.pauseId || null,
@@ -2616,6 +2845,7 @@ if (useEmulator) {
       quelle: x.quelle,
       erstellt: x.erstellt && typeof x.erstellt.toMillis === 'function' ? x.erstellt.toMillis() : Date.now(),
       pos: typeof x.pos === 'number' ? x.pos : null,
+      gezaehlt: x.gezaehlt === true, // zählt für das Limit der Pause
     };
   }
 
@@ -2624,22 +2854,80 @@ if (useEmulator) {
     personId: o.personId, sorteId: o.coffeeId, pauseId: o.pauseId, datum: o.datum, uid: o.uid,
     status: 'offen', quelle: o.quelle, erstellt: Timestamp.fromMillis(o.erstellt),
     ...(o.pos !== null ? { pos: o.pos } : {}),
+    ...(o.gezaehlt ? { gezaehlt: true } : {}),
   });
 
-  // Offene Bestellungen aus beiden Quellen: persönliche Links/eigene Einträge und allgemeine Seite
+  // Zähler der Pausen anpassen (+1 je eingetragener, −1 je stornierter gezählter Bestellung).
+  // increment() wirkt erst auf dem Server und funktioniert daher auch offline. Du darfst das Limit überschreiten.
+  function countWrites(orders, sign) {
+    const groups = new Map();
+    for (const o of orders) {
+      if (!o.gezaehlt || !o.pauseId || !o.datum) continue;
+      const k = `${o.datum}_${o.pauseId}`;
+      const g = groups.get(k) || { datum: o.datum, pauseId: o.pauseId, n: 0, last: o.id };
+      g.n++;
+      g.last = o.id;
+      groups.set(k, g);
+    }
+    return [...groups.values()].map(g => ['set', counterRef(g.datum, g.pauseId),
+      { datum: g.datum, pauseId: g.pauseId, anzahl: increment(sign * g.n), letzte: g.last }, { merge: true }]);
+  }
+
+  // Alle offenen Bestellungen (persönliche Links, allgemeine Seite, deine eigenen) – live
   function startOrders() {
     if (ordersUnsub) ordersUnsub();
     state.orders = [];
-    const parts = { links: [], team: [] };
-    const stops = [];
-    const listen = (key, col, team) => stops.push(onSnapshot(query(col, where('status', '==', 'offen')), snap => {
-      parts[key] = snap.docs.map(d => orderFromDoc(d, team));
-      state.orders = [...parts.links, ...parts.team].sort(compareOrders);
+    ordersUnsub = onSnapshot(query(orderCollection(), where('status', '==', 'offen')), snap => {
+      state.orders = snap.docs.map(orderFromDoc).sort(compareOrders);
+      if (!ordersPrimed) {
+        state.orders.forEach(o => seenOrders.add(o.id));
+        ordersPrimed = true;
+      }
       ordersChanged();
-    }, err => console.error('Bestellungen', err)));
-    listen('links', orderCollection(), null);
-    if (teamPageOn()) listen('team', collection(db, 'teams', state.settings.teamCode, 'bestellungen'), state.settings.teamCode);
-    ordersUnsub = () => stops.forEach(stop => stop());
+    }, err => console.error('Bestellungen', err));
+  }
+
+  // Getränke je Pause von heute (live), für "6 / 8"
+  function startCounts() {
+    if (countsUnsub) countsUnsub();
+    countsDay = todayKey();
+    pauseCounts = new Map();
+    countsUnsub = onSnapshot(query(collection(db, 'zaehler'), where('datum', '==', countsDay)), snap => {
+      pauseCounts = new Map(snap.docs.map(d => [d.get('pauseId'), d.get('anzahl') || 0]));
+      ordersChanged();
+    }, err => console.error('Zähler', err));
+  }
+
+  // Bestellungen der allgemeinen Seite lagen früher im Team-Bereich: in die gemeinsame Liste übernehmen
+  function migrateTeamOrders() {
+    const code = state.settings.teamCode;
+    if (!code) return;
+    getDocs(collection(db, 'teams', code, 'bestellungen')).then(snap => {
+      const writes = [];
+      snap.forEach(d => {
+        if (d.get('status') === 'offen') writes.push(['set', doc(db, 'bestellungen', d.id), d.data()]);
+        writes.push(['delete', d.ref]);
+      });
+      commit(writes);
+    }).catch(() => { /* offline – beim nächsten Start */ });
+  }
+
+  // Einmal am Tag: erledigte Bestellungen und Zähler, die älter als eine Woche sind, löschen
+  function cleanupOld() {
+    let last = null;
+    try { last = localStorage.getItem(CLEANUP_KEY); } catch (e) { /* ignorieren */ }
+    if (last === todayKey() || !navigator.onLine) return;
+    const cutoff = dateKey(new Date(Date.now() - 7 * 864e5));
+    Promise.all([
+      getDocs(query(collection(db, 'bestellungen'), where('datum', '<', cutoff))),
+      getDocs(query(collection(db, 'zaehler'), where('datum', '<', cutoff))),
+    ]).then(([orders, counters]) => {
+      const writes = [];
+      orders.forEach(d => { if (d.get('status') === 'fertig') writes.push(['delete', d.ref]); });
+      counters.forEach(d => writes.push(['delete', d.ref]));
+      commit(writes);
+      savePref(CLEANUP_KEY, todayKey());
+    }).catch(() => { /* später erneut */ });
   }
 
   function ordersChanged() {
@@ -2647,6 +2935,7 @@ if (useEmulator) {
     if (!ready) return;
     if (drag) { ordersDirty = true; return; }
     if (currentView === 'orders' || currentView === 'orderPick') render();
+    else if (currentView === 'orderDrink' && pick) updatePickUi();
     applyPendingFocus();
   }
 
@@ -2675,15 +2964,28 @@ if (useEmulator) {
       toast('Bitte zuerst ein Getränk auswählen.', { error: true });
       return;
     }
+    const pause = pick.pauseId ? state.pauses.find(b => b.id === pick.pauseId) : null;
     const now = Date.now();
-    const refs = [];
-    for (let i = 0; i < pick.qty; i++) refs.push(doc(orderCollection()));
-    commit(refs.map((ref, i) => ['set', ref, {
-      personId: p.id, sorteId: c.id, pauseId: null, datum: todayKey(), uid: adminUser.uid,
-      status: 'offen', quelle: 'admin', erstellt: serverTimestamp(), pos: now + i,
-    }]));
-    const undo = () => commit(refs.map(ref => ['delete', ref]));
-    const msg = `${refs.length > 1 ? refs.length + '× ' : ''}${c.name} für ${p.name} vorgemerkt`;
+    const datum = todayKey();
+    const orders = [];
+    for (let i = 0; i < pick.qty; i++) {
+      const ref = doc(orderCollection());
+      orders.push({ id: ref.id, ref, pauseId: pause ? pause.id : null, datum, gezaehlt: !!pause });
+    }
+    const after = pause ? pauseCount(pause.id) + orders.length : 0;
+    const over = pause && pause.limit > 0 && after > pause.limit;
+    orders.forEach(o => seenOrders.add(o.id));
+    commit([
+      ...orders.map((o, i) => ['set', o.ref, {
+        personId: p.id, sorteId: c.id, pauseId: o.pauseId, datum, uid: adminUser.uid,
+        status: 'offen', quelle: 'admin', erstellt: serverTimestamp(), pos: now + i,
+        ...(o.gezaehlt ? { gezaehlt: true } : {}),
+      }]),
+      ...countWrites(orders, 1),
+    ]);
+    const undo = () => commit([...orders.map(o => ['delete', o.ref]), ...countWrites(orders, -1)]);
+    let msg = `${orders.length > 1 ? orders.length + '× ' : ''}${c.name} für ${p.name} vorgemerkt${pause ? ` (${clock(pause.time)} Uhr)` : ''}`;
+    if (over) msg += ` – Limit überschritten (${after} / ${pause.limit})`;
     if (more) {
       pick.qty = 1;
       updatePickUi();
@@ -2694,7 +2996,9 @@ if (useEmulator) {
   }
 
   function moveOrder(id, dir) {
-    const list = state.orders.slice();
+    const sec = orderSections().find(x => x.orders.some(o => o.id === id));
+    if (!sec) return;
+    const list = sec.orders.slice();
     const i = list.findIndex(o => o.id === id);
     const j = i + dir;
     if (i < 0 || j < 0 || j >= list.length) return;
@@ -2703,7 +3007,8 @@ if (useEmulator) {
     reposition(list);
   }
 
-  // "Fertig": wie ein Tipp in der Personenansicht – mit Rabatt, Preis und Kosten von jetzt
+  // "Fertig": wie ein Tipp in der Personenansicht – mit Rabatt, Preis und Kosten von jetzt.
+  // Der Zähler der Pause bleibt: das Getränk ist ja bestellt worden.
   function completeOrder(id) {
     const order = state.orders.find(o => o.id === id);
     if (!order) return;
@@ -2726,30 +3031,33 @@ if (useEmulator) {
     });
   }
 
+  // Stornieren gibt den Platz in der Pause wieder frei
   function cancelOrder(id) {
     const order = state.orders.find(o => o.id === id);
     if (!order) return;
     const p = personById(order.personId);
     const c = coffeeById(order.coffeeId);
-    commit([['delete', orderRef(order)]]);
+    commit([['delete', orderRef(order)], ...countWrites([order], -1)]);
     toast(`Storniert${p && c ? `: ${c.name} für ${p.name}` : ''}`, {
-      undo: () => commit([['set', orderRef(order), restorable(order)]]),
+      undo: () => commit([['set', orderRef(order), restorable(order)], ...countWrites([order], 1)]),
     });
   }
 
-  async function completeAll() {
-    const valid = o => personById(o.personId) && coffeeById(o.coffeeId);
-    const orders = state.orders.filter(valid);
-    if (!orders.length) return;
+  async function completeAll(key) {
+    const sec = sectionByKey(key);
+    if (!sec || !sec.orders.length) return;
+    const orders = sec.orders;
     const persons = new Set(orders.map(o => o.personId)).size;
     const total = orders.reduce((sum, o) => sum + discountedPrice(coffeeById(o.coffeeId).price, personById(o.personId).discount), 0);
     const ok = await confirmDialog({
-      title: 'Alle Bestellungen verbuchen?',
+      title: `Alle Bestellungen ${sectionPhrase(sec)} verbuchen?`,
       html: `<strong>${plural(orders.length, 'Getränk', 'Getränke')}</strong> für ${plural(persons, 'Person', 'Personen')} werden angerechnet, zusammen <strong>${euro(total)}</strong>.<br><br>${orderSummary(orders)}`,
       confirmText: 'Alle verbuchen',
     });
     if (!ok) return;
-    const done = state.orders.filter(valid);
+    const current = sectionByKey(key);
+    const done = current ? current.orders : [];
+    if (!done.length) return;
     const now = Date.now();
     const entries = done.map(o => bookingFor(personById(o.personId), coffeeById(o.coffeeId), now));
     state.entries.push(...entries);
@@ -2764,9 +3072,11 @@ if (useEmulator) {
     });
   }
 
-  // Gleiche Getränke hintereinander; die Sorte der frühesten Bestellung kommt zuerst
-  function sortOrdersByDrink() {
-    const before = state.orders.slice();
+  // Gleiche Getränke hintereinander (innerhalb einer Pause); die Sorte der frühesten Bestellung kommt zuerst
+  function sortOrdersByDrink(key) {
+    const sec = sectionByKey(key);
+    if (!sec) return;
+    const before = sec.orders.slice();
     const first = new Map();
     before.forEach((o, i) => { if (!first.has(o.coffeeId)) first.set(o.coffeeId, i); });
     const sorted = before
@@ -2782,7 +3092,8 @@ if (useEmulator) {
       undo: () => {
         const pos = new Map(before.map((o, i) => [o.id, i]));
         const at = o => (pos.has(o.id) ? pos.get(o.id) : 1e9 + orderKey(o));
-        reposition(state.orders.slice().sort((a, b) => at(a) - at(b)));
+        const now = sectionByKey(key);
+        reposition((now ? now.orders : before).slice().sort((a, b) => at(a) - at(b)));
       },
     });
   }
@@ -2835,11 +3146,13 @@ if (useEmulator) {
     item.style.transform = '';
     item.classList.remove('dragging');
     document.body.classList.remove('drag-active');
+    const sec = sectionByKey(list.dataset.section);
+    const current = sec ? sec.orders : [];
     const ids = [...list.children].map(li => li.dataset.id);
-    const byId = new Map(state.orders.map(o => [o.id, o]));
+    const byId = new Map(current.map(o => [o.id, o]));
     const next = ids.map(id => byId.get(id)).filter(Boolean)
-      .concat(state.orders.filter(o => !ids.includes(o.id)));
-    const changed = next.some((o, i) => o !== state.orders[i]);
+      .concat(current.filter(o => !ids.includes(o.id)));
+    const changed = next.some((o, i) => o !== current[i]);
     if (changed) {
       pendingFocus = { id: item.dataset.id, action: null };
       reposition(next);
@@ -2896,7 +3209,7 @@ if (useEmulator) {
       danger: true,
     });
     if (!ok) return;
-    const replaced = state.orders.map(o => ['delete', orderRef(o)]);
+    const replaced = [...state.orders.map(o => ['delete', orderRef(o)]), ...countWrites(state.orders, -1)];
     data.settings.teamCode = state.settings.teamCode; // der Team-Code bleibt
     data.settings.teamPage = state.settings.teamPage;
     // Persönliche Links bleiben gültig, auch wenn das Backup älter ist als der Link
@@ -2963,7 +3276,7 @@ if (useEmulator) {
 
   function publicData() {
     const sorten = new Map(state.coffees.map((c, i) => [c.id, { name: c.name, preis: c.price, pos: i }]));
-    const pausen = new Map(state.pauses.map(b => [b.id, { zeit: b.time, name: b.name }]));
+    const pausen = new Map(state.pauses.map(b => [b.id, { zeit: b.time, name: b.name, limit: b.limit }]));
     const data = {
       sorten,
       pausen,
@@ -3242,7 +3555,7 @@ if (useEmulator) {
       toast(`Um ${clock(time)} gibt es schon eine Pause.`, { error: true });
       return;
     }
-    state.pauses.push({ id: uid(), time, name: cleanName(nameInput.value) });
+    state.pauses.push({ id: uid(), time, name: cleanName(nameInput.value), limit: 0 });
     save();
     render();
     toast(`Pause um ${clock(time)} angelegt`);
@@ -3251,6 +3564,21 @@ if (useEmulator) {
   function editPause(t) {
     const pause = state.pauses.find(b => b.id === t.dataset.id);
     if (!pause) return;
+    if (t.dataset.edit === 'pause-limit') {
+      const raw = t.value.trim();
+      const limit = raw === '' ? 0 : /^\d{1,3}$/.test(raw) ? Number(raw) : NaN;
+      if (!Number.isInteger(limit) || limit > MAX_LIMIT) {
+        t.value = pause.limit || '';
+        toast(`Bitte eine ganze Zahl von 0 bis ${MAX_LIMIT} eingeben (leer = kein Limit).`, { error: true });
+        return;
+      }
+      if (limit === pause.limit) return;
+      pause.limit = limit;
+      save();
+      render();
+      toast(limit ? `Pause um ${clock(pause.time)}: höchstens ${plural(limit, 'Getränk', 'Getränke')}` : `Pause um ${clock(pause.time)}: kein Limit mehr`);
+      return;
+    }
     if (t.dataset.edit === 'pause-time') {
       const time = t.value.slice(0, 5);
       if (!isTime(time) || state.pauses.some(b => b !== pause && b.time === time)) {
@@ -3319,6 +3647,8 @@ if (useEmulator) {
     unsubscribers = [];
     if (ordersUnsub) ordersUnsub();
     ordersUnsub = null;
+    if (countsUnsub) countsUnsub();
+    countsUnsub = null;
     publicUnsubs.forEach(stop => stop());
     publicUnsubs = [];
     published = null;
@@ -3464,6 +3794,7 @@ if (useEmulator) {
     ready = true;
     save([...(teamPageOn() ? [['set', teamRef(state.settings.teamCode), { erstellt: serverTimestamp() }]] : []), ...importedOrderWrites(start.orders)]);
     startOrders();
+    startCounts();
     startPublic();
     showApp();
   }
@@ -3485,8 +3816,11 @@ if (useEmulator) {
     }
     save(extra); // schreibt nur, falls die Prüfung beim Laden etwas angepasst hat
     startOrders();
+    startCounts();
     startPublic();
     ensureTeamDoc();
+    migrateTeamOrders();
+    cleanupOld();
     showApp();
   }
 
@@ -3620,8 +3954,12 @@ if (useEmulator) {
       case 'order-down': moveOrder(id, 1); break;
       case 'order-done': completeOrder(id); break;
       case 'order-cancel': cancelOrder(id); break;
-      case 'all-done': completeAll(); break;
-      case 'sort-orders': sortOrdersByDrink(); break;
+      case 'all-done': completeAll(id); break;
+      case 'sort-orders': sortOrdersByDrink(id); break;
+      case 'toggle-section': toggleSection(id, el); break;
+      case 'sections-open': setAllSections(false); break;
+      case 'sections-close': setAllSections(true); break;
+      case 'choose-pause': pick.pauseId = id || null; updatePickUi(); break;
       case 'del-pause': deletePause(id); break;
       case 'copy-link': copyText(orderAppLink(), 'Link zur Bestell-App kopiert'); break;
       case 'copy-code': copyText(state.settings.teamCode, 'Team-Code kopiert'); break;
@@ -3717,6 +4055,20 @@ if (useEmulator) {
   const stopDrag = e => { if (drag && e.pointerId === drag.pointerId) endDrag(); };
   app.addEventListener('pointerup', stopDrag);
   app.addEventListener('pointercancel', stopDrag);
+
+  // Jede halbe Minute: neuer Tag (Zähler neu), Bestellschluss erreicht (Bereiche neu ordnen)
+  let orderClock = '';
+  setInterval(() => {
+    if (!ready) return;
+    if (countsDay && countsDay !== todayKey()) startCounts();
+    const stamp = todayKey() + nowTime();
+    if (stamp === orderClock) return;
+    orderClock = stamp;
+    if (currentView !== 'orders' || drag || dlg.open || document.hidden) return;
+    const active = document.activeElement;
+    if (active && app.contains(active) && active.matches('input, select, textarea')) return;
+    render();
+  }, 30000);
 
   updateNetBanner();
   startAuth();
