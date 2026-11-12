@@ -509,6 +509,7 @@
   .limit-row { flex-basis: 100%; display: flex; align-items: center; gap: 8px; padding: 0 0 6px; font-size: .88rem; color: var(--muted); }
   .limit-row input { flex: 0 0 72px; width: 72px; min-height: 40px; text-align: center; }
   .manage li.pause-item { flex-wrap: wrap; row-gap: 6px; }
+  .grace-row { margin: 14px 0 0; padding: 0; }
   .limit-warn { display: flex; gap: 6px; align-items: flex-start; margin: 12px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--debt-bg); color: var(--debt); font-size: .9rem; font-weight: 600; }
   .limit-warn svg { flex: none; margin-top: 2px; }
   .q-meta { font-size: .82rem; color: var(--muted); }
@@ -654,6 +655,8 @@ if (useEmulator) {
   ];
   const MAX_QTY = 10;
   const MAX_LIMIT = 999; // höchstes Bestelllimit je Pause
+  const DEFAULT_GRACE = 5; // Bestellschluss: Minuten nach Pausenbeginn
+  const MAX_GRACE = 120;
   const FOLD_KEY = 'kaffeekasse.bestellbereiche';
   const CLEANUP_KEY = 'kaffeekasse.aufgeraeumt';
   const BUCKET_SIZE = 2000; // Buchungen je Firestore-Dokument (bleibt deutlich unter 1 MB)
@@ -799,7 +802,7 @@ if (useEmulator) {
       orders: [],
       beans: [],
       pauses: [],
-      settings: { teamCode: null, sound: false, teamPage: true },
+      settings: { teamCode: null, sound: false, teamPage: true, orderGrace: DEFAULT_GRACE },
     };
   }
 
@@ -889,6 +892,7 @@ if (useEmulator) {
       teamCode: typeof st.teamCode === 'string' && /^[A-Z0-9-]{4,40}$/.test(st.teamCode) ? st.teamCode : null,
       sound: st.sound === true,
       teamPage: st.teamPage !== false, // allgemeine Bestellseite mit Team-Code
+      orderGrace: Number.isInteger(st.orderGrace) && st.orderGrace >= 0 && st.orderGrace <= MAX_GRACE ? st.orderGrace : DEFAULT_GRACE,
     };
     return { version: DATA_VERSION, people, groups, coffees, entries, orders, beans, pauses, settings };
   }
@@ -1603,7 +1607,7 @@ if (useEmulator) {
 
   function orderSections() {
     const today = todayKey();
-    const now = nowTime();
+    const now = Date.now();
     const pauseIds = new Set(state.pauses.map(b => b.id));
     const byPause = new Map();
     const none = [];
@@ -1616,22 +1620,21 @@ if (useEmulator) {
         byPause.get(o.pauseId).push(o);
       } else none.push(o);
     }
-    const pauses = sortedPauses().map(b => {
-      const orders = byPause.get(b.id) || [];
+    // Nur Pausen mit offenen Bestellungen, nach Uhrzeit
+    const list = sortedPauses().filter(b => byPause.has(b.id)).map(b => {
+      const schluss = pauseDeadline(b);
       return {
-        key: 'p:' + b.id, kind: 'pause', pause: b, orders, count: pauseCount(b.id), limit: b.limit,
-        closed: b.time <= now, active: b.time > now || orders.length > 0,
+        key: 'p:' + b.id, kind: 'pause', pause: b, orders: byPause.get(b.id), count: pauseCount(b.id), limit: b.limit,
+        closed: now >= schluss, running: now >= schluss - state.settings.orderGrace * 60e3 && now < schluss,
       };
-    }).filter(sec => sec.active || sec.count > 0);
-    const list = pauses.filter(sec => sec.active);
+    });
     if (none.length) list.push({ key: 'ohne', kind: 'none', orders: none });
-    list.push(...pauses.filter(sec => !sec.active));
     if (old.length) list.push({ key: 'frueher', kind: 'old', orders: old });
     return list;
   }
 
   const sectionByKey = key => orderSections().find(sec => sec.key === key);
-  const nextSectionKey = list => { const sec = list.find(x => x.kind === 'pause' && x.active); return sec ? sec.key : (list[0] && list[0].key); };
+  const nextSectionKey = list => { const sec = list.find(x => x.kind === 'pause'); return sec ? sec.key : (list[0] && list[0].key); };
 
   function sectionTitle(sec) {
     if (sec.kind === 'pause') return `${clock(sec.pause.time)} Uhr${sec.pause.name ? ` · ${esc(sec.pause.name)}` : ''}`;
@@ -1642,20 +1645,14 @@ if (useEmulator) {
   function isCollapsed(sec, nextKey) {
     const map = foldMap();
     if (sec.key in map) return map[sec.key];
-    if (!sec.orders.length && (sec.kind !== 'pause' || sec.count > 0)) return true; // alles erledigt
     if (sec.key === nextKey) return false;
     return sec.kind !== 'none';
   }
 
-  // Erledigte Bereiche klappen ein; wird eine andere Pause zur nächsten, klappt sie aus
+  // Erledigte Pausen verschwinden; wird dadurch eine andere Pause zur nächsten, klappt sie aus
   function autoFold(list, nextKey) {
     const map = foldMap();
-    if (lastSections) {
-      for (const sec of list) {
-        if ((lastSections.open.get(sec.key) || 0) > 0 && !sec.orders.length) map[sec.key] = true;
-      }
-      if (nextKey && nextKey !== lastSections.next) delete map[nextKey];
-    }
+    if (lastSections && nextKey && nextKey !== lastSections.next) delete map[nextKey];
     lastSections = { next: nextKey, open: new Map(list.map(sec => [sec.key, sec.orders.length])) };
     saveFold();
   }
@@ -1683,6 +1680,7 @@ if (useEmulator) {
     const tags = [];
     if (full) tags.push('<span class="sec-tag full">ausgebucht</span>');
     if (sec.kind === 'pause' && sec.closed) tags.push('<span class="sec-tag">Bestellschluss erreicht</span>');
+    if (sec.kind === 'pause' && sec.running) tags.push(`<span class="sec-tag">läuft · Bestellschluss ${deadlineClock(sec.pause)}</span>`);
     if (sec.kind === 'old') tags.push('<span class="sec-tag warn">noch nicht verbucht</span>');
     const meta = [];
     if (sec.kind === 'pause') {
@@ -1897,20 +1895,24 @@ if (useEmulator) {
 
   // Vorauswahl: die nächste Pause (bzw. die, deren Bestellungen gerade zubereitet werden)
   function defaultPauseId() {
-    const sec = orderSections().find(x => x.kind === 'pause' && x.active);
-    return sec ? sec.pause.id : null;
+    const now = Date.now();
+    const today = todayKey();
+    const b = sortedPauses().find(x => now < pauseDeadline(x) || state.orders.some(o => o.pauseId === x.id && o.datum === today));
+    return b ? b.id : null;
   }
 
+  // Du kannst jede Pause von heute wählen – auch nach dem Bestellschluss
   function pausePickHtml() {
-    const now = nowTime();
-    const options = sortedPauses().filter(b => b.time > now || b.id === pick.pauseId || state.orders.some(o => o.pauseId === b.id && o.datum === todayKey()));
+    const now = Date.now();
+    const options = sortedPauses();
     const choice = (id, label, sub) => `
           <button type="button" class="choice-btn" role="radio" aria-checked="${(pick.pauseId || '') === id}" data-action="choose-pause" data-id="${id}">
             <span>${label}</span><span class="price">${sub}</span>
           </button>`;
     const grid = options.map(b => {
       const n = pauseCount(b.id);
-      const sub = b.limit ? `${n} / ${b.limit}${n >= b.limit ? ' · ausgebucht' : ''}` : plural(n, 'Getränk', 'Getränke');
+      let sub = b.limit ? `${n} / ${b.limit}${n >= b.limit ? ' · ausgebucht' : ''}` : plural(n, 'Getränk', 'Getränke');
+      if (now >= pauseDeadline(b)) sub += ' · Bestellschluss vorbei';
       return choice(b.id, `${clock(b.time)} Uhr`, sub);
     }).join('') + choice('', 'Ohne Pause', 'ohne Limit');
     return `<div class="coffee-grid" role="radiogroup" aria-label="Pause">${grid}</div>${limitWarnHtml()}`;
@@ -2256,7 +2258,7 @@ if (useEmulator) {
               <label class="limit-row">
                 <span>Limit</span>
                 <input type="text" inputmode="numeric" data-edit="pause-limit" data-id="${b.id}" value="${b.limit || ''}" placeholder="–" maxlength="3" autocomplete="off" enterkeyhint="done" aria-label="Limit für die Pause um ${clock(b.time)} (leer = kein Limit)">
-                <span>${b.limit ? `höchstens ${plural(b.limit, 'Getränk', 'Getränke')} pro Tag` : 'kein Limit'}</span>
+                <span>${b.limit ? `höchstens ${plural(b.limit, 'Getränk', 'Getränke')} pro Tag` : 'kein Limit'} · Bestellschluss ${deadlineClock(b)} Uhr</span>
               </label>
             </li>`).join('')}
           </ul>` : '<p class="empty-note" style="margin-bottom:12px">Noch keine Pausen angelegt.</p>'}
@@ -2265,7 +2267,12 @@ if (useEmulator) {
           <input type="text" id="newPauseName" class="grow" placeholder="z. B. Frühstück" maxlength="${MAX_NAME}" autocomplete="off" enterkeyhint="done" aria-label="Bezeichnung der neuen Pause">
           <button class="btn primary" type="submit">${ICON.plus}Hinzufügen</button>
         </form>
-        <p class="hint">In der Bestell-App können deine Kollegen nur Pausen wählen, die heute noch kommen.</p>
+        <label class="limit-row grace-row">
+          <span>Bestellschluss</span>
+          <input type="text" inputmode="numeric" data-edit="order-grace" value="${state.settings.orderGrace}" maxlength="3" autocomplete="off" enterkeyhint="done" aria-label="Bestellschluss in Minuten nach Pausenbeginn">
+          <span>Minuten nach Pausenbeginn</span>
+        </label>
+        <p class="hint">Deine Kollegen können bis zum Bestellschluss bestellen – auch wenn die Pause schon begonnen hat (z. B. Pause 9:00, Bestellschluss 9:05). Danach ist die Pause in der Bestell-App nicht mehr wählbar. Du selbst kannst jederzeit eintragen.</p>
         <p class="hint">Limit: höchstens so viele Getränke pro Tag für diese Pause (leer oder 0 = kein Limit). Stornierte Bestellungen geben den Platz wieder frei. Eine Änderung gilt sofort; du selbst kannst beim Eintragen über das Limit gehen.</p>
       </section>
 
@@ -2594,6 +2601,21 @@ if (useEmulator) {
   function onEdit(t) {
     const id = t.dataset.id;
     const kind = t.dataset.edit;
+    if (kind === 'order-grace') {
+      const raw = t.value.trim();
+      const minutes = /^\d{1,3}$/.test(raw) ? Number(raw) : NaN;
+      if (!Number.isInteger(minutes) || minutes > MAX_GRACE) {
+        t.value = state.settings.orderGrace;
+        toast(`Bitte 0 bis ${MAX_GRACE} Minuten eingeben.`, { error: true });
+        return;
+      }
+      if (minutes === state.settings.orderGrace) return;
+      state.settings.orderGrace = minutes;
+      save();
+      render();
+      toast(minutes ? `Bestellschluss: ${plural(minutes, 'Minute', 'Minuten')} nach Pausenbeginn` : 'Bestellschluss: bei Pausenbeginn');
+      return;
+    }
     if (kind === 'pause-time' || kind === 'pause-name' || kind === 'pause-limit') {
       editPause(t);
       return;
@@ -2824,8 +2846,26 @@ if (useEmulator) {
   let ordersPrimed = false;
 
   const dateKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  const todayKey = () => dateKey(new Date());
-  const nowTime = () => { const d = new Date(); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+  // Pausenzeiten sind deutsche Ortszeit – unabhängig von der Zeitzone des Geräts. Sommerzeit vom letzten
+  // Sonntag im März bis zum letzten Sonntag im Oktober (jeweils 1:00 Uhr UTC), genau wie in den Regeln.
+  const lastSundayUtc = (y, m) => Date.UTC(y, m - 1, 31 - new Date(Date.UTC(y, m - 1, 31)).getUTCDay()) + 3600e3;
+  const isSummerTime = ms => { const y = new Date(ms).getUTCFullYear(); return ms >= lastSundayUtc(y, 3) && ms < lastSundayUtc(y, 10); };
+  function germanTime(ms = Date.now()) {
+    const t = new Date(ms + (isSummerTime(ms) ? 2 : 1) * 3600e3);
+    const two = n => String(n).padStart(2, '0');
+    return { date: `${t.getUTCFullYear()}-${two(t.getUTCMonth() + 1)}-${two(t.getUTCDate())}`, time: `${two(t.getUTCHours())}:${two(t.getUTCMinutes())}` };
+  }
+  const todayKey = () => germanTime().date;
+  const nowTime = () => germanTime().time;
+  // Bestellschluss (Zeitstempel): Pausenbeginn am Tag "datum" + Minuten, deutsche Ortszeit
+  function deadlineMs(datum, time, minutes) {
+    const [y, m, d] = datum.split('-').map(Number);
+    const [h, min] = time.split(':').map(Number);
+    const local = Date.UTC(y, m - 1, d) + (h * 60 + min + minutes) * 60e3;
+    return isSummerTime(local - 7200e3) ? local - 7200e3 : local - 3600e3;
+  }
+  const pauseDeadline = b => deadlineMs(todayKey(), b.time, state.settings.orderGrace);
+  const deadlineClock = b => clock(germanTime(pauseDeadline(b)).time); // z. B. "9:05"
   const orderKey = o => (o.pos !== null ? o.pos : o.erstellt);
   const compareOrders = (a, b) => orderKey(a) - orderKey(b) || a.erstellt - b.erstellt || (a.id < b.id ? -1 : 1);
   const vibrate = () => { if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) { /* ignorieren */ } } };
@@ -3276,7 +3316,7 @@ if (useEmulator) {
 
   function publicData() {
     const sorten = new Map(state.coffees.map((c, i) => [c.id, { name: c.name, preis: c.price, pos: i }]));
-    const pausen = new Map(state.pauses.map(b => [b.id, { zeit: b.time, name: b.name, limit: b.limit }]));
+    const pausen = new Map(state.pauses.map(b => [b.id, { zeit: b.time, name: b.name, limit: b.limit, schluss: state.settings.orderGrace }]));
     const data = {
       sorten,
       pausen,

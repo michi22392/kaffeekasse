@@ -179,6 +179,8 @@
   .choice:disabled { opacity: .6; }
   .choice:disabled:active { transform: none; }
   .choice[aria-checked="true"] .seats { color: inherit; }
+  .running { margin-top: 3px; font-size: .76rem; font-weight: 700; line-height: 1.25; color: var(--accent); }
+  .choice[aria-checked="true"] .running { color: inherit; }
   .notice.warn { margin-top: 12px; background: var(--danger-bg); color: var(--danger); font-weight: 700; }
 </style>
 </head>
@@ -201,7 +203,7 @@ import { firebaseConfig, useEmulator } from './firebase-config.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import { getAuth, connectAuthEmulator, onAuthStateChanged, signInAnonymously } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
 import {
-  getFirestore, connectFirestoreEmulator, collection, doc, getDoc, getDocs, setDoc, query, where, onSnapshot, serverTimestamp, runTransaction,
+  getFirestore, connectFirestoreEmulator, collection, doc, getDoc, getDocs, setDoc, query, where, onSnapshot, serverTimestamp, runTransaction, Timestamp,
 } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
 
 const firebaseApp = initializeApp(firebaseConfig);
@@ -235,8 +237,22 @@ if (useEmulator) {
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const clock = time => time.replace(/^0(\d)/, '$1');
   const pad = n => String(n).padStart(2, '0');
-  const dateKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  const nowTime = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+  // Pausenzeiten sind deutsche Ortszeit – unabhängig von der Zeitzone des Handys. Sommerzeit vom letzten
+  // Sonntag im März bis zum letzten Sonntag im Oktober (jeweils 1:00 Uhr UTC), genau wie in den Regeln.
+  const lastSundayUtc = (y, m) => Date.UTC(y, m - 1, 31 - new Date(Date.UTC(y, m - 1, 31)).getUTCDay()) + 3600e3;
+  const isSummerTime = ms => { const y = new Date(ms).getUTCFullYear(); return ms >= lastSundayUtc(y, 3) && ms < lastSundayUtc(y, 10); };
+  function germanTime(ms = Date.now()) {
+    const t = new Date(ms + (isSummerTime(ms) ? 2 : 1) * 3600e3);
+    return { date: `${t.getUTCFullYear()}-${pad(t.getUTCMonth() + 1)}-${pad(t.getUTCDate())}`, time: `${pad(t.getUTCHours())}:${pad(t.getUTCMinutes())}` };
+  }
+  const today = () => germanTime().date;
+  // Bestellschluss: Pausenbeginn (deutsche Ortszeit) + Minuten, als Zeitstempel
+  function deadlineMs(datum, time, minutes) {
+    const [y, m, d] = datum.split('-').map(Number);
+    const [h, min] = time.split(':').map(Number);
+    const local = Date.UTC(y, m - 1, d) + (h * 60 + min + minutes) * 60e3;
+    return isSummerTime(local - 7200e3) ? local - 7200e3 : local - 3600e3;
+  }
   const initials = name => name.split(' ').filter(Boolean).map(w => Array.from(w)[0]).slice(0, 2).join('').toLocaleUpperCase('de');
   const store = {
     get(key) { try { return localStorage.getItem(key); } catch (e) { return null; } },
@@ -267,9 +283,9 @@ if (useEmulator) {
   let countsUnsub = null;
   let pausesUnsub = null;
   let counts = new Map(); // Pause → heute schon bestellte Getränke
-  let fullNotice = '';    // Hinweis, wenn eine Pause beim Bestellen voll wurde
+  let fullNotice = '';    // Hinweis, wenn eine Pause beim Bestellen voll wurde bzw. Bestellschluss war
   let loadedAt = 0;
-  let day = dateKey(new Date());
+  let day = today();
   let sending = false;
   let success = '';
   // pauseAuto: Pause automatisch wählen (nächste mit freien Plätzen), bis selbst eine gewählt wird
@@ -423,7 +439,11 @@ if (useEmulator) {
   }
 
   const pausesFrom = snap => snap.docs
-    .map(d => ({ id: d.id, time: d.get('zeit'), name: d.get('name') || '', limit: Number.isInteger(d.get('limit')) ? d.get('limit') : 0 }))
+    .map(d => ({
+      id: d.id, time: d.get('zeit'), name: d.get('name') || '',
+      limit: Number.isInteger(d.get('limit')) ? d.get('limit') : 0,
+      schluss: Number.isInteger(d.get('schluss')) ? d.get('schluss') : 5, // Bestellschluss: Minuten nach Pausenbeginn
+    }))
     .sort((a, b) => a.time.localeCompare(b.time));
 
   async function loadMenu(base) {
@@ -461,7 +481,7 @@ if (useEmulator) {
       }, err => { if (err.code === 'permission-denied') recover(); else console.info('Kollegen', err.code); }));
     }
     pausesUnsub = () => stops.forEach(stop => stop());
-    countsUnsub = onSnapshot(query(collection(db, 'zaehler'), where('datum', '==', dateKey(new Date()))), snap => {
+    countsUnsub = onSnapshot(query(collection(db, 'zaehler'), where('datum', '==', today())), snap => {
       counts = new Map(snap.docs.map(d => [d.get('pauseId'), d.get('anzahl') || 0]));
       refreshSeats();
     }, err => {
@@ -609,7 +629,7 @@ if (useEmulator) {
   // allgemeine Seite: die von diesem Gerät.
   function listenMine() {
     if (mineUnsub) mineUnsub();
-    day = dateKey(new Date());
+    day = today();
     const q = mode === 'link'
       ? query(collection(db, 'bestellungen'), where('personId', '==', me.personId), where('datum', '==', day))
       : query(collection(db, 'bestellungen'), where('uid', '==', uid), where('datum', '==', day));
@@ -671,7 +691,11 @@ if (useEmulator) {
   }
 
   // ---------- Bestellen ----------
-  const upcoming = () => team.pauses.filter(b => b.time > nowTime());
+  const deadlineOf = b => deadlineMs(today(), b.time, b.schluss);
+  const deadlineText = b => clock(germanTime(deadlineOf(b)).time);
+  const isRunning = b => Date.now() >= deadlineOf(b) - b.schluss * 60e3; // Pause hat schon begonnen
+  // Bestellbar bis zum Bestellschluss – auch wenn die Pause schon läuft
+  const upcoming = () => team.pauses.filter(b => Date.now() < deadlineOf(b));
   const seatsLeft = b => (b.limit > 0 ? Math.max(0, b.limit - (counts.get(b.id) || 0)) : Infinity);
   const isFull = b => seatsLeft(b) === 0;
   const available = () => upcoming().filter(b => !isFull(b));
@@ -767,7 +791,8 @@ if (useEmulator) {
     const seats = b.limit > 0 ? (full ? 'ausgebucht' : `noch ${left} von ${b.limit} frei`) : '';
     return `<button type="button" class="choice${full ? ' full' : ''}" role="radio" aria-checked="${b.id === sel.pauseId}"${full ? ' disabled aria-disabled="true"' : ''} data-pick="pause" data-id="${b.id}">` +
       `<span>${clock(b.time)} Uhr</span><span class="choice-sub">${b.name ? esc(b.name) : '&nbsp;'}</span>` +
-      `${seats ? `<span class="seats${!full && left <= 2 ? ' few' : ''}">${seats}</span>` : ''}</button>`;
+      `${seats ? `<span class="seats${!full && left <= 2 ? ' few' : ''}">${seats}</span>` : ''}` +
+      `${isRunning(b) ? `<span class="running">Pause läuft – noch bis ${deadlineText(b)} bestellbar</span>` : ''}</button>`;
   }
 
   function render() {
@@ -840,12 +865,18 @@ if (useEmulator) {
         : `Für <strong>${esc(p.name)}</strong> ist schon ein ${esc(c.name)} für die Pause um ${clock(b.time)} Uhr bestellt.`,
       confirmText: 'Ja, noch einen',
     }))) return;
+    const schluss = deadlineOf(b);
+    if (Date.now() >= schluss) {
+      fullNotice = `Der Bestellschluss für die Pause um ${clock(b.time)} Uhr war um ${deadlineText(b)} Uhr.`;
+      render();
+      return;
+    }
     sending = true;
     fullNotice = '';
     const btn = $('#orderBtn');
     btn.disabled = true;
     btn.textContent = 'Wird gesendet …';
-    const datum = dateKey(new Date());
+    const datum = today();
     const counterRef = doc(db, 'zaehler', `${datum}_${b.id}`);
     const orderRef = doc(collection(db, 'bestellungen'));
     try {
@@ -860,6 +891,7 @@ if (useEmulator) {
         tx.set(orderRef, {
           personId: p.id, sorteId: c.id, pauseId: b.id, datum, uid,
           status: 'offen', quelle: 'kollege', erstellt: serverTimestamp(), gezaehlt: true,
+          bestellschluss: Timestamp.fromMillis(schluss), // die Regeln prüfen ihn gegen die Serverzeit
         });
       });
       success = `${c.name} für die Pause um ${clock(b.time)} Uhr bestellt`;
@@ -875,6 +907,15 @@ if (useEmulator) {
       if (full) {
         const msg = `Leider ist die Pause um ${clock(b.time)} Uhr inzwischen ausgebucht`;
         fullNotice = `${msg}. Die Bestellung wurde nicht angelegt – bitte eine andere Pause wählen.`;
+        success = '';
+        if (sel.pauseId === b.id) sel.pauseId = null;
+        sel.pauseAuto = false;
+        render();
+        toast(msg, { error: true });
+      } else if (e.code === 'permission-denied' && Date.now() > schluss - 5 * 60e3) {
+        // Kurz vor dem Bestellschluss abgeschickt, aber erst danach angekommen (Serverzeit zählt)
+        const msg = `Leider ist der Bestellschluss für die Pause um ${clock(b.time)} Uhr vorbei (${deadlineText(b)} Uhr)`;
+        fullNotice = `${msg}. Die Bestellung wurde nicht angelegt.`;
         success = '';
         if (sel.pauseId === b.id) sel.pauseId = null;
         sel.pauseAuto = false;
@@ -985,12 +1026,12 @@ if (useEmulator) {
   // Beim Zurückkehren: neuer Tag, geänderte Daten, vergangene Pausen
   document.addEventListener('visibilitychange', () => {
     if (document.hidden || !team || !mode || sending) return;
-    if (dateKey(new Date()) !== day || Date.now() - loadedAt > RELOAD_AFTER) reopen(true);
+    if (today() !== day || Date.now() - loadedAt > RELOAD_AFTER) reopen(true);
     else render();
   });
   setInterval(() => {
     if (document.hidden || !team || !mode || sending || dlg.open) return;
-    const ids = upcoming().map(b => b.id).join();
+    const ids = upcoming().map(b => b.id + (isRunning(b) ? '+' : '')).join();
     if (ids !== app.dataset.pauses) render();
     app.dataset.pauses = ids;
   }, 30000);
